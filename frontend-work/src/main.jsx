@@ -5,6 +5,7 @@ import "./index.css";
 import MainLayout from "./layout/MainLayout.jsx";
 import Home from "./pages/Home.jsx"
 import Login from "./pages/Login.jsx";
+import Profile from "./pages/Profile.jsx";
 
 
 const router = createBrowserRouter([
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
         path: "/",
         element: <Home></Home>,
       },
+      {
+        path: "profile",
+        element: <Profile></Profile>
+      }
     ],
   },
   {
