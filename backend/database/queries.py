@@ -33,9 +33,23 @@ def create_invoice(db: Session, amount: int, user_id: int):
     db.refresh(invoice)
     return invoice
 
+def create_contract(db: Session, details: str, user_id: int):
+    contract = Contract(
+        details=details,
+        user_id=user_id
+    )
 
-#def create_contract(db: Session, details: str, user_id: int):
-#    contract = Contract(   
+    db.add(contract)
+    db.commit()
+    db.refresh(contract)
+    return contract
+def create_task(db: Session, description: str, user_id: int):
+    task = Task(
+        description=description,
+        user_id=user_id
+    )
 
-
-# reasearcha task och contracts vad de används till, och implementera create_contract och create_task på samma sätt som create_invoice och create_post.
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+    return task
