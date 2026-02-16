@@ -7,12 +7,18 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #fafafa;
+  background-color: #d6d3df;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #0d1320, #00000ab9);
 }
 
 /* a {
@@ -25,9 +31,9 @@
 }
 
 body {
-  margin: 0;
   min-height: 100vh;
-} */
+  background: linear-gradient(to bottom, #000000, #111827);
+}
 
 h1 {
   font-size: 3.2em;
