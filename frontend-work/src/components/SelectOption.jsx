@@ -1,13 +1,55 @@
 function SelectOption() {
   return (
-    <div className="flex flex-col items-end gap-4 py-8">
-      <button className="px-35 py-8 border border-white text-white rounded-lg bg-transparent hover:bg-white hover:text-black transition-all duration-200">
-        Find Task
-      </button>
+    <div className="flex flex-col gap-6">
 
-      <button className="px-35 py-8 border border-white text-white rounded-lg bg-transparent hover:bg-white hover:text-black transition-all duration-200">
-        Upload Task
-      </button>
+      <div className="w-[620px]">
+        <button
+          className="
+            w-full
+            h-32
+            rounded-xl
+            border-2 border-white/80
+            bg-transparent
+            text-white
+            hover:bg-white hover:text-black
+            transition
+            flex flex-col justify-center
+            px-8
+          "
+        >
+          <span className="text-xl font-semibold">
+            Find Task
+          </span>
+          <span className="mt-1 text-sm font-light opacity-80">
+            Find your next task for you and your team to work on
+          </span>
+        </button>
+      </div>
+
+      <div className="w-[620px]">
+        <button
+          className="
+            w-full
+            h-32
+            rounded-xl
+            border-2 border-white/80
+            bg-transparent
+            text-white
+            hover:bg-white hover:text-black
+            transition
+            flex flex-col justify-center
+            px-8
+          "
+        >
+          <span className="text-xl font-semibold">
+            Upload Task
+          </span>
+          <span className="mt-1 text-sm font-light opacity-80">
+            Upload your task and get matched with the best solution for you
+          </span>
+        </button>
+      </div>
+
     </div>
   );
 }
