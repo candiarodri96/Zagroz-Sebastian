@@ -11,10 +11,10 @@ export default function Profile() {
       <div className='max-w-6xl mx-auto px-8 text-black'>
       <div className="grid grid-cols-12 gap-12">
           
-          {/* 2. Sidebar Column */}
+          {/* 2. Sidebar column */}
           <div className="col-span-12 md:col-span-4 lg:col-span-3 -mt-16">
             <div className="flex flex-col">
-              {/* Profile Image */}
+              {/* Profile image */}
               <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-slate-200 mb-4 shadow-sm">
                 <img src="https://media.tenor.com/kLddcBbInzwAAAAe/serious-dog.png" alt="Sam Lee" className="w-full h-full object-cover" />
               </div>
@@ -25,7 +25,7 @@ export default function Profile() {
               <div className="flex items-center gap-3"><UserRoundCog size={18} /> <span>Manage Profile</span></div>
               </button>
 
-              {/* Sidebar Info Sections */}
+              {/* Sidebar info sections */}
               <div className="space-y-6 text-sm text-slate-600">
                 <section>
                   <h2 className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-3">About</h2>
@@ -58,10 +58,10 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* 3. Main Content Column */}
+          {/* 3. Main content column */}
           <div className="col-span-12 md:col-span-8 lg:col-span-9 py-8">
             
-            {/* Worked On Section */}
+            {/* What youve worked on */}
             <section className="mb-8">
               <div className="flex justify-between items-end mb-4">
                 <div>
@@ -92,7 +92,7 @@ export default function Profile() {
               </div>
             </section>
 
-            {/* Places you work in */}
+            {/* Organisations youve worked for */}
             <section className="mb-8">
               <h2 className="text-lg font-medium mb-4">Places you've worked at</h2>
               <div className="border border-slate-200 rounded-lg p-4 bg-slate-50">
