@@ -12,7 +12,7 @@ export default function Login() {
 
       <div className="w-full max-w-6xl justify-between items-start flex flex-col md:flex-row p-10 z-10 px-8 relative gap-12">
         <div className="text-2xl mb-4">
-          <h1>Welcome Back</h1>
+          <h1>Lets find your next work</h1>
           <p>The best website for making your business your own</p>
           <p>
             Log in or register today to dive in and make take on an assignment
@@ -39,6 +39,17 @@ export default function Login() {
                 className="w-full border p-2 rounded"
                 placeholder="••••••••"
               />
+            </div>
+
+            <div>
+              <button className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors">
+                Haven't registered yet? 
+              </button>
+            </div>
+            <div>
+              <button className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors">
+                Forgot your password? 
+              </button>
             </div>
 
             <button className="w-full bg-black text-white py-2 rounded">
