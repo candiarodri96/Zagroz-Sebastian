@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from .models import User, Post, Invoice, Contract, Task
+from models.models import User, Post, Invoice, Contract, Task
 
 def create_user(db: Session, username: str, email: str, password_hash: str):
     user = User(
