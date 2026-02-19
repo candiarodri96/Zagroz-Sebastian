@@ -13,8 +13,9 @@ export default function Login() {
 
       <div className="w-full max-w-6xl justify-between items-start flex flex-col md:flex-row p-10 z-10 px-8 relative gap-12">
         <div className="text-2xl mb-4">
-          <h1>Lets find your next work</h1>
-          <p>The best website for making your business your own</p>
+          <h1 className="text-white text-4xl font-bold">Lets find your next work</h1>
+          {/* Why is h1 and h2 not changing? */}
+          <h2 className="text-white text-3xl">The best website for making your business your own</h2> 
           <p>
             Log in or register today to dive in and make take on an assignment
           </p>

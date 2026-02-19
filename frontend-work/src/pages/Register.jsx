@@ -6,7 +6,7 @@ export default function Register() {
     <div
       className="min-h-screen w-full flex items-center justify-end bg-cover bg-center bg-no-repeat relative"
       style={{
-        backgroundImage: `url('https://images.unsplash.com/photo-1482731215275-a1f151646268?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
+        backgroundImage: `url('https://images.unsplash.com/photo-1587582423116-ec07293f0395?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
       }}
     >
       <div className="absolute inset-0 bg-blue-500/20 z-0"></div>
