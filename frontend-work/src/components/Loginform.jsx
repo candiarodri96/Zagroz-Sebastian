@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from "react-router-dom"
 
 export default function Loginform() {
   return (
@@ -24,15 +25,20 @@ export default function Loginform() {
               />
             </div>
 
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="remember" className="accent-blue-500" />
+              <label htmlFor="remember" className="text-sm">Remember Me</label>
+            </div>
+
             <div>
-              <button className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors">
+              <Link to={"/register"} className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors" >
                 Haven't registered yet? 
-              </button>
+              </Link>
             </div>
             <div>
-              <button className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors">
+              <Link to={""} className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors">
                 Forgot your password? 
-              </button>
+              </Link>
             </div>
 
             <button className="w-full bg-black text-white py-2 rounded">
