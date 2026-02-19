@@ -1,4 +1,6 @@
 import React from 'react'
+import { Link } from "react-router-dom"
+
 
 export default function RegisterForm() {
   return (
@@ -43,9 +45,9 @@ export default function RegisterForm() {
             </div>
 
             <div>
-              <button className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors">
+              <Link to={"/login"} className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors">
                 Already a member? Log in
-              </button>
+              </Link>
             </div>
 
             <button className="w-full bg-black text-white py-2 rounded">
