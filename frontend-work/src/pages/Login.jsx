@@ -1,4 +1,5 @@
 import React from "react";
+import Loginform from "../components/Loginform";
 
 export default function Login() {
   return (
@@ -19,6 +20,7 @@ export default function Login() {
           </p>
         </div>
 
+<<<<<<< backend/candiarodri96
         <div className="w-95 bg-gray-900 border p-8 ">
           <form className="space-y-5">
             <h2 className="text-2xl font-bold">Log In</h2>
@@ -56,7 +58,12 @@ export default function Login() {
               Continue
             </button>
           </form>
+=======
+        <div>
+          <Loginform></Loginform>
+>>>>>>> main
         </div>
+
       </div>
     </div>
   );

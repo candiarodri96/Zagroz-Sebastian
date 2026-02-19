@@ -1,13 +1,28 @@
 import React from 'react'
 
-export default function Loginform() {
+export default function RegisterForm() {
   return (
-<<<<<<< backend/candiarodri96
-    <div>Loginform</div>
-=======
     <div className="w-95 bg-gray-900 border p-8 ">
           <form className="space-y-5">
-            <h2 className="text-2xl font-bold">Log In</h2>
+            <h2 className="text-2xl font-bold">Register</h2>
+
+            <div>
+              <label className="block mb-1 text-sm">First Name</label>
+              <input
+                type=""
+                className="w-full border p-2 rounded"
+                placeholder="John"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 text-sm">Last Name</label>
+              <input
+                type=""
+                className="w-full border p-2 rounded"
+                placeholder="Doe"
+              />
+            </div>
 
             <div>
               <label className="block mb-1 text-sm">Email</label>
@@ -29,12 +44,7 @@ export default function Loginform() {
 
             <div>
               <button className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors">
-                Haven't registered yet? 
-              </button>
-            </div>
-            <div>
-              <button className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors">
-                Forgot your password? 
+                Already a member? Log in
               </button>
             </div>
 
@@ -43,6 +53,5 @@ export default function Loginform() {
             </button>
           </form>
         </div>
->>>>>>> main
   )
 }
