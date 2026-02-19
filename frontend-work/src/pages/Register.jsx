@@ -1,3 +1,11 @@
+<<<<<<< backend/candiarodri96
+import React from 'react'
+
+export default function Register() {
+  return (
+    <div>Register</div>
+  )
+=======
 import React from "react";
 import RegisterForm from "../components/RegisterForm";
 
@@ -27,4 +35,5 @@ export default function Register() {
       </div>
     </div>
   );
+>>>>>>> main
 }

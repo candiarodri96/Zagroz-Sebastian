@@ -2,6 +2,9 @@ import React from 'react'
 
 export default function Loginform() {
   return (
+<<<<<<< backend/candiarodri96
+    <div>Loginform</div>
+=======
     <div className="w-95 bg-gray-900 border p-8 ">
           <form className="space-y-5">
             <h2 className="text-2xl font-bold">Log In</h2>
@@ -40,5 +43,6 @@ export default function Loginform() {
             </button>
           </form>
         </div>
+>>>>>>> main
   )
 }
