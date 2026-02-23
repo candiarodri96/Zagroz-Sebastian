@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 export default function Loginform() {
   return (
     <div>
-      <div>Loginform</div>
 
       <div className="w-95 bg-gray-900 border p-8">
         <form className="space-y-5">
