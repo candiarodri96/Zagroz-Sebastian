@@ -1,15 +1,21 @@
-import { Outlet } from 'react-router-dom';
-import Navbar from '../components/Navbar.jsx';
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Chatbot from "../components/Chatbot";
 
 function MainLayout() {
-    return (
-        <div>
-            <Navbar />
-            <main className="flex flex-col items-center px-4">
-                <Outlet />
-            </main>
-        </div>
-    );
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  return (
+    <>
+      <Navbar openChat={() => setIsChatOpen(true)} />
+      <Outlet />
+
+      {isChatOpen && (
+        <Chatbot closeChat={() => setIsChatOpen(false)} />
+      )}
+    </>
+  );
 }
 
 export default MainLayout;
