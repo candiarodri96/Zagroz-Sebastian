@@ -11,7 +11,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
 
-    @field_validator(password)
+    @field_validator("password")
     @classmethod
     def password_strenght(cls, x):
         if len(x) < 8:
