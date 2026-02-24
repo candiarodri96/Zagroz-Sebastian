@@ -1,40 +1,70 @@
-from sqlalchemy import Integer, String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, declarative_base
+from datetime import datetime
+from sqlalchemy import Integer,Text, String, ForeignKey, DateTime
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.db.database import Base
 
 
-base = declarative_base()
 
 
-class User(base):
+class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    first_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
 
+    # Relationships
+    ads = relationship("Ad", back_populates="user", cascade="all, delete")
+    offers = relationship("Offer", back_populates="user", cascade="all, delete")
 
-class Post(base):
-    __tablename__ = "posts"
+class Ad(Base):
+    __tablename__ = "ads"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
-    content: Mapped[str] = mapped_column(String, nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    category: Mapped[str] = mapped_column(String(50), nullable=False)
+    location: Mapped[str] = mapped_column(String(100), nullable=False)
+    budget: Mapped[int] = mapped_column(Integer, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
 
-class Invoice(base):
-    __tablename__ = "invoices"
+    status: Mapped[str] = mapped_column(
+        String(50),
+         nullable=False,
+           default="open"
+           )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, 
+        default=datetime.utcnow,
+        nullable=False
+        )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+          nullable=False,
+          index=True
+          )
+    # Relationships
+    user = relationship("User", back_populates="ads")
+    offers = relationship("Offer", back_populates="ad", cascade="all, delete")
+
+
+
+class Offer(Base):
+    __tablename__ = "offers"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    amount: Mapped[int] = mapped_column(nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-
-class Contract(base):
-    __tablename__ = "contracts"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    details: Mapped[str] = mapped_column(String, nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-
-
-class Task(base):
-    __tablename__ = "tasks"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    description: Mapped[str] = mapped_column(String, nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    ad_id: Mapped[int] = mapped_column(ForeignKey("ads.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    amount: Mapped[int] = mapped_column(Integer, nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, 
+        default=datetime.utcnow,
+        nullable=False
+        )
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default="pending",
+        nullable=False
+    )
+    # Relationships
+    ad = relationship("Ad", back_populates="offers")
+    user = relationship("User", back_populates="offers")
