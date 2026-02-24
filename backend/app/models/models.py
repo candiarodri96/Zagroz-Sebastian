@@ -11,7 +11,6 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     first_name: Mapped[str] = mapped_column(String(50), nullable=False)
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
-    role: Mapped[str] = mapped_column(String(20), nullable=False, default="user")
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
 
@@ -39,7 +38,7 @@ class Ad(Base):
         nullable=False
         )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"), ondelete="CASCADE",
+        ForeignKey("users.id", ondelete="CASCADE"),
           nullable=False,
           index=True
           )
@@ -52,8 +51,8 @@ class Ad(Base):
 class Offer(Base):
     __tablename__ = "offers"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    ad_id: Mapped[int] = mapped_column(ForeignKey("ads.id"), ondelete="CASCADE", nullable=False, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), ondelete="CASCADE", nullable=False, index=True)
+    ad_id: Mapped[int] = mapped_column(ForeignKey("ads.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
