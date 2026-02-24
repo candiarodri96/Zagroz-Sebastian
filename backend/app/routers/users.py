@@ -6,7 +6,6 @@ from db import queries
 from schemas.user import UserCreate, UserOut, UserLogin
 from models.models import User
 from app.core.security import verify_password, create_access_token
-
 router = APIRouter()
 
 @router.post("/register", response_model=UserOut)
