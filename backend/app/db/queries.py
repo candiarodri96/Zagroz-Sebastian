@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
 from app.models.models import User, Ad, Offer
 
-def create_user(db: Session, username: str, email: str, password_hash: str):
+def create_user(db: Session, first_name: str, last_name: str, email: str, password_hash: str):
     user = User(
-        username=username,
+        first_name=first_name,
+        last_name=last_name,
         email=email,
         password_hash=password_hash
     )
