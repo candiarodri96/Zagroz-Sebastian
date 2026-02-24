@@ -5,11 +5,8 @@ from app.db.database import get_db
 from db import queries
 from schemas.user import UserCreate, UserOut, UserLogin
 from models.models import User
-<<<<<<< backend/candiarodri96
 from app.core.security import verify_password, create_access_token
-=======
 
->>>>>>> main
 router = APIRouter()
 
 @router.post("/register", response_model=UserOut)
@@ -27,7 +24,6 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
-<<<<<<< backend/candiarodri96
 
     if not db_user:
         raise HTTPException(status_code=401, detail="Invalid email or password")
@@ -42,10 +38,3 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "access_token": access_token,
         "token_type": "bearer"
     }
-=======
-    if not db_user:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    if db_user.password_hash != user.password:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    return {"message": "Login successful", "user_id": db_user.id, "username": db_user.username}
->>>>>>> main
