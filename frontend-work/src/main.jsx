@@ -8,6 +8,7 @@ import Login from "./pages/Login.jsx";
 import Profile from "./pages/Profile.jsx";
 import Results from "./pages/Results.jsx";
 import Register from "./pages/Register.jsx";
+import CreatePost from "./pages/CreatePost.jsx";
 
 
 const router = createBrowserRouter([
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: "register",
     element: <Register></Register>
+  },
+  {
+    path: "create",
+    element: <CreatePost></CreatePost>
   }
 ]);
 
