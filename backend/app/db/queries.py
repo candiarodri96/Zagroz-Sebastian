@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
-from models.models import User, Post, Invoice, Contract, Task
+from app.models.models import User, Ad, Offer
 
-def create_user(db: Session, username: str, email: str, password_hash: str):
+def create_user(db: Session, first_name: str, last_name: str, email: str, password_hash: str):
     user = User(
-        username=username,
+        first_name=first_name,
+        last_name=last_name,
         email=email,
         password_hash=password_hash
     )
@@ -12,44 +13,32 @@ def create_user(db: Session, username: str, email: str, password_hash: str):
     db.refresh(user)
     return user
 
-def create_post(db: Session, title: str, content: str, user_id: int):
-    post = Post(
+def create_ad(db: Session, title: str, category: str, location: str, budget: int, description: str, user_id: int):
+    ad = Ad(
         title=title,
-        content=content,
-        user_id=user_id
-    )
-    db.add(post)
-    db.commit()
-    db.refresh(post)
-    return post
-
-def create_invoice(db: Session, amount: int, user_id: int):
-    invoice = Invoice(
-        amount=amount,
-        user_id=user_id
-    )
-    db.add(invoice)
-    db.commit()
-    db.refresh(invoice)
-    return invoice
-
-def create_contract(db: Session, details: str, user_id: int):
-    contract = Contract(
-        details=details,
-        user_id=user_id
-    )
-
-    db.add(contract)
-    db.commit()
-    db.refresh(contract)
-    return contract
-def create_task(db: Session, description: str, user_id: int):
-    task = Task(
+        category=category,
+        location=location,
+        budget=budget,
         description=description,
         user_id=user_id
     )
-
-    db.add(task)
+    db.add(ad)
     db.commit()
-    db.refresh(task)
-    return task
+    db.refresh(ad)
+    return ad
+
+def create_offer(db: Session, ad_id: int, user_id: int, amount: int, message: str | None = None):
+    offer = Offer(
+        ad_id=ad_id,
+        user_id=user_id,
+        amount=amount,
+        message=message
+    )
+    db.add(offer)
+    db.commit()
+    db.refresh(offer)
+    return offer
+
+
+
+
