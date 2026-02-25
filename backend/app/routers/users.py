@@ -1,40 +1,71 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.db.database import get_db
-from app.db import queries
-from app.schemas.user import UserCreate, UserOut, UserLogin
 from app.models.models import User
-from app.core.security import verify_password, create_access_token
+from app.core.auth import get_current_user
+from app.db.database import get_db
+from app.schemas.user import UserUpdate, ChangePassword, UserOut
+from app.services import user_services
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/users",
+    tags=["Users"],
+)
 
-@router.post("/register", response_model=UserOut)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.email == user.email).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return queries.create_user(
-        db,
-        username=user.username,
-        email=user.email,
-        password_hash=user.password_hash
+
+# =========================
+# GET CURRENT USER
+# =========================
+@router.get("/me", response_model=UserOut)
+def read_current_user(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
+
+
+# =========================
+# UPDATE EMAIL
+# =========================
+@router.put("/me", response_model=UserOut)
+def update_current_user(
+    data: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return user_services.update_user_email(
+        db=db,
+        user=current_user,
+        new_email=data.email,
     )
 
-@router.post("/login")
-def login(user: UserLogin, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.email == user.email).first()
 
-    if not db_user:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    if not verify_password(user.password, db_user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    access_token = create_access_token(
-        data={"sub": str(db_user.id)}
+# =========================
+# CHANGE PASSWORD
+# =========================
+@router.patch("/change-password")
+def change_password(
+    data: ChangePassword,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_services.change_user_password(
+        db=db,
+        user=current_user,
+        old_password=data.old_password,
+        new_password=data.new_password,
     )
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+
+    return {"message": "Password updated successfully"}
+
+
+# =========================
+# DELETE USER
+# =========================
+@router.delete("/me")
+def delete_current_user(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_services.delete_user(db=db, user=current_user)
+
+    return {"message": "User deleted successfully"}
