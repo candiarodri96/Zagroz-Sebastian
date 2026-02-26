@@ -9,6 +9,7 @@ import Profile from "./pages/Profile.jsx";
 import Results from "./pages/Results.jsx";
 import Register from "./pages/Register.jsx";
 import CreatePost from "./pages/CreatePost.jsx";
+import AdDetail from "./pages/AdDetail.jsx";
 
 
 const router = createBrowserRouter([
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: "results",
         element: <Results></Results>
+      },
+      {
+        path: "ad/:id",
+        element: <AdDetail></AdDetail>
       }
     ],
   },
