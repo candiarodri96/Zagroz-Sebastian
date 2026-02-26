@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,10 +8,19 @@ from app.core.auth import router as auth_router
 from app.routers.offers import router as offers_router
 
 from app.db.database import engine
-from app.models.models import Base
-from app.models.models import User, Ad, Offer  # 🔥 LÄGG TILL DENNA
+from app.models.models import Base, User, Ad, Offer
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Safe mode — only creates tables that don't exist yet
+    Base.metadata.create_all(bind=engine)
+    print("✅ Tables ready")
+    yield
+    # Shutdown logic (if needed) goes here
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,8 +29,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-Base.metadata.create_all(bind=engine)
 
 app.include_router(user_router)
 app.include_router(auth_router)

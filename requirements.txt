@@ -5,6 +5,6 @@ pydantic
 psycopg2-binary
 
 
-passlib[bcrypt]
-python-jose[cryptography]
+bcrypt
+PyJWT
 pydantic-settings
