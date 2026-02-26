@@ -18,13 +18,14 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8000/users/register", {
+      const response = await fetch("http://localhost:8000/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: `${firstName} ${lastName}`,
+          first_name: firstName,
+          last_name: lastName,
           email,
-          password_hash: password,
+          password,
         }),
       });
 

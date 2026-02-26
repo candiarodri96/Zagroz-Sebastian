@@ -21,6 +21,7 @@ export default function CreatePost() {
   const [category, setCategory] = useState("");
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
+  const [budget, setBudget] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ export default function CreatePost() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/posts/", {
+      const response = await fetch("http://localhost:8000/ads/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -46,10 +47,11 @@ export default function CreatePost() {
         },
         body: JSON.stringify({
           title,
-          content,
+          description: content,
           category,
           city,
           address: address || null,
+          budget: parseInt(budget),
         }),
       });
 
@@ -152,6 +154,19 @@ export default function CreatePost() {
             placeholder="e.g. Sveavägen 12, 111 57"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm font-medium">Budget (kr)</label>
+          <input
+            type="number"
+            min="1"
+            className="w-full border border-slate-300 p-3 rounded-lg bg-slate-800 text-white"
+            placeholder="e.g. 15000"
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
+            required
           />
         </div>
 
