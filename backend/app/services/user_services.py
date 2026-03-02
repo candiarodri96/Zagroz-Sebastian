@@ -46,13 +46,13 @@ def change_user_password(
     old_password: str,
     new_password: str,
 ):
-    if not verify_password(old_password, user.hashed_password):
+    if not verify_password(old_password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect password",
         )
 
-    user.hashed_password = hash_password(new_password)
+    user.password_hash = hash_password(new_password)
     db.commit()
 
 
