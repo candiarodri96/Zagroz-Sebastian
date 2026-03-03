@@ -1,9 +1,14 @@
+import { useNavigate } from "react-router-dom";
+
 function SelectOption() {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col gap-6">
 
       <div className="w-[620px]">
         <button
+          onClick={() => navigate("/results")}
           className="
             w-full
             h-32
@@ -28,6 +33,7 @@ function SelectOption() {
 
       <div className="w-[620px]">
         <button
+          onClick={() => navigate("/create")}
           className="
             w-full
             h-32
