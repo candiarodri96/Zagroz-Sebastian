@@ -19,6 +19,7 @@ class User(Base):
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[str] = mapped_column(String(20), nullable=False, default="customer")
 
     # Relationships
     ads = relationship("Ad", back_populates="user", cascade="all, delete")
