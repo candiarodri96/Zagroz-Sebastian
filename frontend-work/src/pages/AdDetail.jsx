@@ -130,19 +130,27 @@ export default function AdDetail() {
         </p>
       </div>
 
-      {/* Make offer button */}
-      <button
-        onClick={() => {
-          if (!user?.access_token) {
-            navigate("/login");
-            return;
-          }
-          setShowModal(true);
-        }}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold text-lg transition-colors"
-      >
-        Make an Offer
-      </button>
+      {/* Make offer button — only show when ad is open */}
+      {ad.status === "open" && (
+        <button
+          onClick={() => {
+            if (!user?.access_token) {
+              navigate("/login");
+              return;
+            }
+            setShowModal(true);
+          }}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold text-lg transition-colors"
+        >
+          Make an Offer
+        </button>
+      )}
+
+      {ad.status !== "open" && (
+        <div className="w-full text-center py-4 bg-slate-800 border border-slate-700 rounded-xl text-slate-400">
+          This ad is currently in: <span className="font-medium text-white">{ad.status}</span>
+        </div>
+      )}
 
       {/* ===================== */}
       {/* OFFER MODAL           */}
