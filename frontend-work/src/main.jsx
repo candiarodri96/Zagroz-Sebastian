@@ -3,13 +3,17 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import MainLayout from "./layout/MainLayout.jsx";
-import Home from "./pages/Home.jsx"
+import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Profile from "./pages/Profile.jsx";
 import Results from "./pages/Results.jsx";
 import Register from "./pages/Register.jsx";
 import CreatePost from "./pages/CreatePost.jsx";
 import AdDetail from "./pages/AdDetail.jsx";
+import MyAds from "./pages/MyAds.jsx";
+import MyOffers from "./pages/MyOffers.jsx";
+import NegotiationChat from "./pages/NegotiationChat.jsx";
+import ContractView from "./pages/ContractView.jsx";
 
 
 const router = createBrowserRouter([
@@ -19,34 +23,50 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Home></Home>,
+        element: <Home />,
       },
       {
         path: "profile",
-        element: <Profile></Profile>
+        element: <Profile />,
       },
       {
         path: "results",
-        element: <Results></Results>
+        element: <Results />,
       },
       {
         path: "ad/:id",
-        element: <AdDetail></AdDetail>
-      }
+        element: <AdDetail />,
+      },
+      {
+        path: "my-ads",
+        element: <MyAds />,
+      },
+      {
+        path: "my-offers",
+        element: <MyOffers />,
+      },
+      {
+        path: "chat/:adId",
+        element: <NegotiationChat />,
+      },
+      {
+        path: "contract/:adId",
+        element: <ContractView />,
+      },
     ],
   },
   {
     path: "login",
-    element: <Login></Login>
+    element: <Login />,
   },
   {
     path: "register",
-    element: <Register></Register>
+    element: <Register />,
   },
   {
     path: "create",
-    element: <CreatePost></CreatePost>
-  }
+    element: <CreatePost />,
+  },
 ]);
 
 createRoot(document.getElementById("root")).render(
