@@ -9,6 +9,7 @@ export default function MyOffers() {
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
+  const API = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     if (!user?.access_token) {
@@ -21,7 +22,7 @@ export default function MyOffers() {
   const fetchAdsAndOffers = async () => {
     try {
       // Get all open ads
-      const adsRes = await fetch("http://localhost:8000/ads/");
+      const adsRes = await fetch(`${API}/ads/`);
       const adsData = await adsRes.json();
       setAds(adsData);
 
@@ -30,7 +31,7 @@ export default function MyOffers() {
       for (const ad of adsData) {
         try {
           const offerRes = await fetch(
-            `http://localhost:8000/ads/${ad.id}/offers`,
+            `${API}/ads/${ad.id}/offers`,
             { headers: { Authorization: `Bearer ${user.access_token}` } }
           );
           if (offerRes.ok) {
@@ -56,7 +57,7 @@ export default function MyOffers() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/ads/${adId}/offers/${offerId}/withdraw`,
+        `${API}/ads/${adId}/offers/${offerId}/withdraw`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${user.access_token}` },

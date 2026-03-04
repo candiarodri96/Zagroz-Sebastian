@@ -15,6 +15,8 @@ const categories = [
   { value: "other", label: "Other" },
 ];
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function CreatePost() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -39,7 +41,7 @@ export default function CreatePost() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/ads/", {
+      const response = await fetch(`${API}/ads/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

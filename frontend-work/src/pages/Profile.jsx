@@ -1,6 +1,8 @@
 import React from 'react';
 import { Briefcase, MapPin, Building, Users, Mail, Plus, UserRoundCog } from 'lucide-react';
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function Profile() {
   return (
               // make the banner into a component later

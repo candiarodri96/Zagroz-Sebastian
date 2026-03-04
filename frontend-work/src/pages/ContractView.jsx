@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FileText, Check, X, ArrowLeft } from "lucide-react";
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function ContractView() {
   const { adId } = useParams();
   const navigate = useNavigate();
@@ -24,7 +26,7 @@ export default function ContractView() {
 
   const fetchMe = async () => {
     try {
-      const res = await fetch("http://localhost:8000/users/me", {
+      const res = await fetch(`${API}/users/me`, {
         headers: { Authorization: `Bearer ${user.access_token}` },
       });
       if (res.ok) {
@@ -39,7 +41,7 @@ export default function ContractView() {
   const fetchContract = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8000/ads/${adId}/contract`,
+        `${API}/ads/${adId}/contract`,
         { headers: { Authorization: `Bearer ${user.access_token}` } }
       );
 
@@ -63,7 +65,7 @@ export default function ContractView() {
     setActionLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/ads/${adId}/contract/sign`,
+        `${API}/ads/${adId}/contract/sign`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${user.access_token}` },
@@ -91,7 +93,7 @@ export default function ContractView() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/ads/${adId}/contract/cancel`,
+        `${API}/ads/${adId}/contract/cancel`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${user.access_token}` },
@@ -119,7 +121,7 @@ export default function ContractView() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/ads/${adId}/contract/complete`,
+        `${API}/ads/${adId}/contract/complete`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${user.access_token}` },

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, Clock, ChevronDown, ChevronUp, Check, X, MessageSquare } from "lucide-react";
 import categoryImages from "../utils/categoryImages";
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function MyAds() {
   const [ads, setAds] = useState([]);
   const [offersMap, setOffersMap] = useState({});
@@ -22,7 +24,7 @@ export default function MyAds() {
 
   const fetchMyAds = async () => {
     try {
-      const response = await fetch("http://localhost:8000/ads/", {
+      const response = await fetch(`${API}/ads/`, {
         headers: { Authorization: `Bearer ${user.access_token}` },
       });
       const data = await response.json();
@@ -43,7 +45,7 @@ export default function MyAds() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/ads/${adId}/offers`, {
+      const response = await fetch(`${API}/ads/${adId}/offers`, {
         headers: { Authorization: `Bearer ${user.access_token}` },
       });
       const data = await response.json();
@@ -57,7 +59,7 @@ export default function MyAds() {
   const selectOffer = async (adId, offerId) => {
     try {
       const response = await fetch(
-        `http://localhost:8000/ads/${adId}/offers/${offerId}/select`,
+        `${API}/ads/${adId}/offers/${offerId}/select`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${user.access_token}` },
@@ -85,7 +87,7 @@ export default function MyAds() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/ads/${adId}/offers/${offerId}/fail`,
+        `${API}/ads/${adId}/offers/${offerId}/fail`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${user.access_token}` },
@@ -110,7 +112,7 @@ export default function MyAds() {
   const createContract = async (adId) => {
     try {
       const response = await fetch(
-        `http://localhost:8000/ads/${adId}/contract`,
+        `${API}/ads/${adId}/contract`,
         {
           method: "POST",
           headers: {
