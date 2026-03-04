@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
 import string
+from typing import Literal
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -10,6 +11,7 @@ class UserCreate(BaseModel):
     last_name: str = Field(min_length=2, max_length=50)
     email: EmailStr
     password: str = Field(min_length=8)
+    role: Literal["customer", "company"] = "customer"
 
     @field_validator("password")
     @classmethod
@@ -57,6 +59,7 @@ class UserOut(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
+    role: str
 
     class Config:
         from_attributes = True

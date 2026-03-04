@@ -17,13 +17,13 @@ export default function Loginform() {
       const formData = new URLSearchParams();
       formData.append("username", email);
       formData.append("password", password);
-
+console.log("Hello")
       const response = await fetch("http://localhost:8000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData,
       });
-
+console.log("Response", response.status)
       if (!response.ok) {
         const data = await response.json();
         setError(data.detail || "Login failed");
