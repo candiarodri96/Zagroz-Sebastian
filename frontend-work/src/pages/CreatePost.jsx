@@ -39,7 +39,7 @@ export default function CreatePost() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/ads/", {
+      const response = await fetch("http://13.62.178.191:8000/ads/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

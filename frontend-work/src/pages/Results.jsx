@@ -15,7 +15,7 @@ export default function Results() {
 
   const fetchAds = async () => {
     try {
-      const response = await fetch("http://localhost:8000/ads/");
+      const response = await fetch("/ads/");
       const data = await response.json();
       setAds(data);
     } catch (err) {
