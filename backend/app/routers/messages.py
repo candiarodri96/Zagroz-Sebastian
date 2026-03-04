@@ -6,6 +6,7 @@ from app.db.database import get_db
 from app.models.models import Ad, Offer, Message, User
 from app.schemas.message import MessageCreate, MessageOut
 from app.core.auth import get_current_user
+from app.services.notifications import create_notification
 
 router = APIRouter()
 
@@ -57,6 +58,18 @@ def send_message(
         content=data.content,
     )
     db.add(message)
+
+    # Notify the other party
+    other_id = company_id if current_user.id == customer_id else customer_id
+    create_notification(
+        db,
+        user_id=other_id,
+        ad_id=ad_id,
+        type="new_message",
+        title="New message",
+        message=f"{current_user.first_name}: {data.content[:80]}{'...' if len(data.content) > 80 else ''}",
+    )
+
     db.commit()
     db.refresh(message)
 

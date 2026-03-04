@@ -4,6 +4,8 @@ import SearchBar from "../components/Searchbar";
 import ServiceCard from "../components/Card";
 import categoryImages from "../utils/categoryImages";
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function Results() {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ export default function Results() {
 
   const fetchAds = async () => {
     try {
-      const response = await fetch("http://localhost:8000/ads/");
+      const response = await fetch(`${API}/ads/`);
       const data = await response.json();
       setAds(data);
     } catch (err) {

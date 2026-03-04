@@ -11,6 +11,7 @@ from app.services.status_machine import (
     AD_TRANSITIONS,
     CONTRACT_TRANSITIONS,
 )
+from app.services.notifications import create_notification
 
 router = APIRouter()
 
@@ -57,6 +58,17 @@ def create_contract(
     )
 
     db.add(contract)
+
+    # Notify the company
+    create_notification(
+        db,
+        user_id=selected_offer.user_id,
+        ad_id=ad_id,
+        type="contract_created",
+        title="Contract created!",
+        message=f"A contract has been created for \"{ad.title}\" ({selected_offer.amount} kr). Please review and sign.",
+    )
+
     db.commit()
     db.refresh(contract)
     return contract
@@ -104,10 +116,21 @@ def sign_contract(
     validate_transition(current_status, new_status, CONTRACT_TRANSITIONS, "Contract")
     contract.status = new_status
 
+    # Notify the other party
+    other_id = contract.company_id if current_user.id == contract.customer_id else contract.customer_id
+    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+
+    create_notification(
+        db,
+        user_id=other_id,
+        ad_id=ad_id,
+        type="contract_signed",
+        title="Contract signed!",
+        message=f"{current_user.first_name} signed the contract for \"{ad.title}\".",
+    )
+
     if new_status == "fully_signed":
         contract.signed_at = datetime.now(timezone.utc)
-
-        ad = db.query(Ad).filter(Ad.id == ad_id).first()
         ad.status = "active_contract"
 
         other_offers = (
@@ -155,6 +178,17 @@ def cancel_contract(
     if ad:
         ad.status = "open"
 
+    # Notify the other party
+    other_id = contract.company_id if current_user.id == contract.customer_id else contract.customer_id
+    create_notification(
+        db,
+        user_id=other_id,
+        ad_id=ad_id,
+        type="contract_cancelled",
+        title="Contract cancelled",
+        message=f"The contract for \"{ad.title}\" has been cancelled.",
+    )
+
     db.commit()
     db.refresh(contract)
     return contract
@@ -183,6 +217,16 @@ def complete_contract(
     ad = db.query(Ad).filter(Ad.id == ad_id).first()
     if ad:
         ad.status = "closed"
+
+    # Notify the company
+    create_notification(
+        db,
+        user_id=contract.company_id,
+        ad_id=ad_id,
+        type="contract_completed",
+        title="Job completed! 🎉",
+        message=f"The job \"{ad.title}\" has been marked as completed. Payment of {contract.agreed_amount} kr.",
+    )
 
     db.commit()
     db.refresh(contract)

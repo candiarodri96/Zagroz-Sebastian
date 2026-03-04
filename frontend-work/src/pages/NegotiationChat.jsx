@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Send, ArrowLeft } from "lucide-react";
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function NegotiationChat() {
   const { adId } = useParams();
   const navigate = useNavigate();
@@ -33,7 +35,7 @@ export default function NegotiationChat() {
   const fetchMessages = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8000/ads/${adId}/messages`,
+        `${API}/ads/${adId}/messages`,
         { headers: { Authorization: `Bearer ${user.access_token}` } }
       );
 
@@ -61,7 +63,7 @@ export default function NegotiationChat() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/ads/${adId}/messages`,
+        `${API}/ads/${adId}/messages`,
         {
           method: "POST",
           headers: {
@@ -93,7 +95,7 @@ export default function NegotiationChat() {
   useEffect(() => {
     const fetchMe = async () => {
       try {
-        const res = await fetch("http://localhost:8000/users/me", {
+        const res = await fetch(`${API}/users/me`, {
           headers: { Authorization: `Bearer ${user.access_token}` },
         });
         if (res.ok) {

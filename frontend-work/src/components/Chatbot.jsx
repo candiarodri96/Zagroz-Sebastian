@@ -4,44 +4,7 @@ import { X, Send } from "lucide-react";
 import { getResponse } from "../utils/chatbotKnowledge";
 
 function Chatbot({ closeChat }) {
-  const navigate = useNavigate();
-  const [messages, setMessages] = useState([
-    {
-      from: "bot",
-      text: "Hi! I'm Flowie, the little painter from the home page! I'm here to help you with anything on WorkFlow. You can ask me things like:\n• How do I create an ad?\n• How do I register?\n• How do I find tasks?\nJust type your question and I'll do my best!",
-    },
-  ]);
-  const [input, setInput] = useState("");
-  const bottomRef = useRef(null);
-
-  // Auto-scroll to newest message
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleSend = () => {
-    const trimmed = input.trim();
-    if (!trimmed) return;
-
-    const userMsg = { from: "user", text: trimmed };
-    const { answer, guide } = getResponse(trimmed);
-    const botMsg = { from: "bot", text: answer, guide };
-
-    setMessages((prev) => [...prev, userMsg, botMsg]);
-    setInput("");
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handleGuide = (path) => {
-    closeChat();
-    navigate(path);
-  };
+  const API = import.meta.env.VITE_API_URL;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col bg-gray-950 border border-slate-700 text-white rounded-2xl shadow-2xl w-96 h-[500px]">

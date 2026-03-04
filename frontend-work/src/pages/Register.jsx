@@ -31,10 +31,16 @@ export default function Register() {
       return;
     }
 
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/auth/register", {
+      const API = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -43,14 +49,25 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.detail || "Registration failed");
+        // Handle validation errors (422) — detail is an array
+        if (Array.isArray(data.detail)) {
+          const messages = data.detail.map((err) => {
+            // Make field-specific messages more readable
+            const field = err.loc?.[1] || "field";
+            return `${field}: ${err.msg}`;
+          }).join("\n");
+          setError(messages);
+        } else {
+          setError(data.detail || "Registration failed. Please try again.");
+        }
         setLoading(false);
         return;
       }
 
       navigate("/login", { state: { registered: true } });
     } catch (err) {
-      setError("Could not connect to server");
+      console.error("Register error:", err);
+      setError("Could not connect to server. Please try again later.");
       setLoading(false);
     }
   };

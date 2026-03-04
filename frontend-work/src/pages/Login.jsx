@@ -18,19 +18,32 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
-console.log("YO")
+
     try {
-      console.log("Hello")
-      const response = await fetch("http://127.0.0.1:8000/auth/login", {
+      const API = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-console.log("response", response)
+
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.detail || "Login failed");
+        // Handle validation errors (422) — detail is an array
+        if (Array.isArray(data.detail)) {
+          const messages = data.detail.map((err) => err.msg).join(". ");
+          setError(messages);
+        } else {
+          setError(data.detail || "Login failed. Please check your credentials.");
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Make sure user data exists before accessing it
+      if (!data.user || !data.access_token) {
+        setError("Unexpected server response. Please try again.");
         setLoading(false);
         return;
       }
@@ -53,8 +66,8 @@ console.log("response", response)
         navigate("/profile");
       }
     } catch (err) {
-      console.log("error", err)
-      setError("Could not connect to server");
+      console.error("Login error:", err);
+      setError("Could not connect to server. Please try again later.");
       setLoading(false);
     }
   };
