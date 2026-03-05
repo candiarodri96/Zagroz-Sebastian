@@ -59,6 +59,7 @@ class AdPublicOut(BaseModel):
     status: str
     created_at: datetime
     user_id: int
+    owner_name: str | None = None
 
     class Config:
         from_attributes = True
