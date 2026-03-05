@@ -25,7 +25,7 @@ export default function AdDetail() {
 
   const fetchAd = async () => {
     try {
-      const response = await fetch(`${API}/ads/${id}`);
+      const response = await fetch(`http://13.62.178.191:8000/ads/${id}`);
       if (!response.ok) {
         navigate("/results");
         return;
@@ -51,7 +51,11 @@ export default function AdDetail() {
     }
 
     try {
+<<<<<<< HEAD
+      const response = await fetch(`http://13.62.178.191:8000/ads/${id}/offers`, {
+=======
       const response = await fetch(`${API}/ads/${id}/offers`, {
+>>>>>>> f097db9f2a725068b874fd215577de3affaac3f4
         method: "POST",
         headers: {
           "Content-Type": "application/json",

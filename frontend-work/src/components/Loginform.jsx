@@ -18,7 +18,7 @@ export default function Loginform() {
       formData.append("username", email);
       formData.append("password", password);
 console.log("Hello")
-      const response = await fetch("http://localhost:8000/auth/login", {
+      const response = await fetch("http://13.62.178.191:8000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData,
