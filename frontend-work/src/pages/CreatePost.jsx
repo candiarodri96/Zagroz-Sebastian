@@ -15,6 +15,8 @@ const categories = [
   { value: "other", label: "Other" },
 ];
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function CreatePost() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");

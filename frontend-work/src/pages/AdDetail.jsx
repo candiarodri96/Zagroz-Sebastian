@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { MapPin, Calendar, DollarSign } from "lucide-react";
 import categoryImages from "../utils/categoryImages";
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function AdDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -49,7 +51,11 @@ export default function AdDetail() {
     }
 
     try {
+<<<<<<< HEAD
       const response = await fetch(`http://13.62.178.191:8000/ads/${id}/offers`, {
+=======
+      const response = await fetch(`${API}/ads/${id}/offers`, {
+>>>>>>> f097db9f2a725068b874fd215577de3affaac3f4
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -130,19 +136,79 @@ export default function AdDetail() {
         </p>
       </div>
 
-      {/* Make offer button */}
-      <button
-        onClick={() => {
-          if (!user?.access_token) {
-            navigate("/login");
-            return;
-          }
-          setShowModal(true);
-        }}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold text-lg transition-colors"
-      >
-        Make an Offer
-      </button>
+      {/* Status-based actions */}
+      {ad.status === "open" && user?.role === "company" && ad.user_id !== user.id && (
+        <button
+          onClick={() => {
+            if (!user?.access_token) {
+              navigate("/login");
+              return;
+            }
+            setShowModal(true);
+          }}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold text-lg transition-colors"
+        >
+          Make an Offer
+        </button>
+      )}
+
+      {ad.status === "open" && user?.id === ad.user_id && (
+        <div className="w-full text-center py-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400">
+          Your ad is live — waiting for offers.
+          <button
+            onClick={() => navigate("/my-ads")}
+            className="block mx-auto mt-2 text-sm text-blue-400 hover:underline"
+          >
+            View offers in My Ads →
+          </button>
+        </div>
+      )}
+
+      {ad.status === "negotiation" && (
+        <div className="space-y-3">
+          <div className="w-full text-center py-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-yellow-400">
+            Negotiation in progress
+          </div>
+          {(user?.id === ad.user_id || user?.role === "company") && (
+            <button
+              onClick={() => navigate(`/chat/${ad.id}`)}
+              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 rounded-xl font-semibold transition-colors"
+            >
+              Open Chat
+            </button>
+          )}
+        </div>
+      )}
+
+      {ad.status === "active_contract" && (
+        <div className="space-y-3">
+          <div className="w-full text-center py-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-blue-400">
+            Contract is active
+          </div>
+          {(user?.id === ad.user_id || user?.role === "company") && (
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate(`/contract/${ad.id}`)}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-colors"
+              >
+                View Contract
+              </button>
+              <button
+                onClick={() => navigate(`/chat/${ad.id}`)}
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-semibold transition-colors"
+              >
+                Open Chat
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {ad.status === "closed" && (
+        <div className="w-full text-center py-4 bg-slate-500/10 border border-slate-500/30 rounded-xl text-slate-400">
+          🎉 This job has been completed
+        </div>
+      )}
 
       {/* ===================== */}
       {/* OFFER MODAL           */}

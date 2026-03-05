@@ -19,6 +19,7 @@ class User(Base):
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[str] = mapped_column(String(20), nullable=False, default="customer")
 
     # Relationships
     ads = relationship("Ad", back_populates="user", cascade="all, delete")
@@ -157,3 +158,34 @@ class Message(Base):
     # Relationships
     ad = relationship("Ad", back_populates="messages")
     sender = relationship("User")
+
+
+# =========================
+# NOTIFICATION
+# =========================
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    ad_id: Mapped[int | None] = mapped_column(
+        ForeignKey("ads.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+
+    type: Mapped[str] = mapped_column(String(50), nullable=False)
+    # Types: "new_offer", "offer_selected", "new_message", "contract_created",
+    #        "contract_signed", "contract_completed", "negotiation_failed", "contract_cancelled"
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    is_read: Mapped[bool] = mapped_column(default=False, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, nullable=False
+    )
+
+    # Relationships
+    user = relationship("User")
+    ad = relationship("Ad")

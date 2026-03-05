@@ -7,6 +7,7 @@ from app.models.models import Ad, Offer, User
 from app.schemas.offer import OfferCreate, OfferUpdate, OfferOut
 from app.core.auth import get_current_user
 from app.services.status_machine import validate_transition, OFFER_TRANSITIONS
+from app.services.notifications import create_notification
 
 router = APIRouter()
 
@@ -51,6 +52,17 @@ def create_offer(
         message=offer.message,
     )
     db.add(new_offer)
+
+    # Notify the ad owner
+    create_notification(
+        db,
+        user_id=ad.user_id,
+        ad_id=ad_id,
+        type="new_offer",
+        title="New offer received!",
+        message=f"{current_user.first_name} {current_user.last_name} offered {offer.amount} kr on \"{ad.title}\"",
+    )
+
     db.commit()
     db.refresh(new_offer)
     return new_offer
@@ -144,6 +156,16 @@ def select_offer(
     offer.status = "selected"
     ad.status = "negotiation"
 
+    # Notify the company that their offer was selected
+    create_notification(
+        db,
+        user_id=offer.user_id,
+        ad_id=ad_id,
+        type="offer_selected",
+        title="Your offer was selected!",
+        message=f"Your offer of {offer.amount} kr on \"{ad.title}\" was selected. You can now chat with the customer.",
+    )
+
     db.commit()
     db.refresh(offer)
     return offer
@@ -177,6 +199,16 @@ def fail_negotiation(
 
     offer.status = "failed_negotiation"
     ad.status = "open"
+
+    # Notify the company
+    create_notification(
+        db,
+        user_id=offer.user_id,
+        ad_id=ad_id,
+        type="negotiation_failed",
+        title="Negotiation cancelled",
+        message=f"The negotiation for \"{ad.title}\" was cancelled by the customer.",
+    )
 
     db.commit()
     db.refresh(offer)
