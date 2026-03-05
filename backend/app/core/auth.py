@@ -16,6 +16,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 # Detta talar om var token hämtas ifrån (Authorization header)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
 
 # =========================
@@ -105,3 +106,26 @@ def get_current_user(
         )
 
     return user
+
+
+# =========================
+# GET OPTIONAL USER
+# =========================
+def get_optional_user(
+    token: str | None = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """Returns the current user if a valid token is provided, otherwise None."""
+    if not token:
+        return None
+    try:
+        payload = decode_access_token(token)
+        if payload is None:
+            return None
+        user_id = payload.get("sub")
+        if user_id is None:
+            return None
+        user = db.query(User).filter(User.id == int(user_id)).first()
+        return user
+    except Exception:
+        return None

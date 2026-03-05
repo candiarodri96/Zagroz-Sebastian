@@ -42,7 +42,7 @@ function Chatbot({ closeChat }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col bg-gray-950 border border-slate-700 text-white rounded-2xl shadow-2xl w-96 h-[500px]">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col bg-gray-950 border border-slate-700 text-white rounded-2xl shadow-2xl w-96 h-125">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800">
         <h3 className="font-bold text-sm">Flowie</h3>
