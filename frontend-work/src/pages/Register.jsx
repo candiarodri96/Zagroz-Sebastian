@@ -89,7 +89,7 @@ export default function Register() {
       </div>
 
       {/* Right side — form */}
-      <div className="w-full lg:w-[480px] min-h-screen bg-gray-950/95 backdrop-blur-sm flex items-center justify-center px-8">
+      <div className="w-full lg:w-120 min-h-screen bg-gray-950/95 backdrop-blur-sm flex items-center justify-center px-8">
         <div className="w-full max-w-sm">
           <h2 className="text-3xl font-bold text-center mb-8 text-white">
             Create Account
@@ -133,44 +133,64 @@ export default function Register() {
             </div>
 
             {/* Name fields */}
-            <div className="grid grid-cols-2 gap-3">
+            {formData.role === "company" ? (
               <div>
                 <label className="block text-sm text-slate-400 mb-1">
-                  First Name
+                  Company Name
                 </label>
                 <input
                   type="text"
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
+                  placeholder="e.g. Bygg & Renovering AB"
                   required
                   className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
                 />
               </div>
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="last_name"
-                  value={formData.last_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
-                />
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm text-slate-400 mb-1">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleChange}
+                    required
+                    className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleChange}
+                    required
+                    className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Email */}
             <div>
-              <label className="block text-sm text-slate-400 mb-1">Email</label>
+              <label className="block text-sm text-slate-400 mb-1">
+                {formData.role === "company" ? "Company Email" : "Email"}
+              </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
+                placeholder={formData.role === "company" ? "info@company.se" : ""}
                 className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
