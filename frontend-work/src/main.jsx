@@ -14,6 +14,7 @@ import MyAds from "./pages/MyAds.jsx";
 import MyOffers from "./pages/MyOffers.jsx";
 import NegotiationChat from "./pages/NegotiationChat.jsx";
 import ContractView from "./pages/ContractView.jsx";
+import Messages from "./pages/Messages.jsx";
 
 
 const router = createBrowserRouter([
@@ -53,6 +54,10 @@ const router = createBrowserRouter([
         path: "contract/:adId",
         element: <ContractView />,
       },
+      {
+        path: "messages",
+        element: <Messages></Messages>
+      }
     ],
   },
   {

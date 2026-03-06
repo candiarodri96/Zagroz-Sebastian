@@ -8,7 +8,7 @@ class UserLogin(BaseModel):
 
 class UserCreate(BaseModel):
     first_name: str = Field(min_length=2, max_length=50)
-    last_name: str = Field(min_length=2, max_length=50)
+    last_name: str = Field(min_length=0, max_length=50)
     email: EmailStr
     password: str = Field(min_length=8)
     role: Literal["customer", "company"] = "customer"

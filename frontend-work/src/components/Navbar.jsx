@@ -283,7 +283,7 @@ function Navbar({ showButtons = true, openChat }) {
                                 </p>
                               </div>
                               {!notif.is_read && (
-                                <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                                <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 shrink-0" />
                               )}
                             </div>
                           </button>
@@ -350,6 +350,7 @@ function Navbar({ showButtons = true, openChat }) {
                   <SidebarLink to="/my-ads" icon={FileText}>My Ads</SidebarLink>
                   <SidebarLink to="/create" icon={PlusCircle}>Post New Ad</SidebarLink>
                   <SidebarLink to="/results" icon={Search}>Browse Ads</SidebarLink>
+                  <SidebarLink to="/messages" icon={MessageSquare}>Messages</SidebarLink>
                 </>
               )}
 
@@ -357,6 +358,7 @@ function Navbar({ showButtons = true, openChat }) {
                 <>
                   <SidebarLink to="/results" icon={Search}>Browse Ads</SidebarLink>
                   <SidebarLink to="/my-offers" icon={FileText}>My Offers</SidebarLink>
+                  <SidebarLink to="/messages" icon={MessageSquare}>Messages</SidebarLink>
                 </>
               )}
 
