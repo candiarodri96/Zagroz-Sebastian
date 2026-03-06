@@ -1,10 +1,45 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { X, Send } from "lucide-react";
-import { getResponse } from "../utils/chatbotKnowledge";
+import { getResponse, getWelcomeMessage } from "../utils/chatbotKnowledge";
 
 function Chatbot({ closeChat }) {
-  const API = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
+  const bottomRef = useRef(null);
+
+  // Build a login-aware welcome message on mount
+  const welcome = getWelcomeMessage();
+  const [messages, setMessages] = useState([
+    { from: "bot", text: welcome.text, guide: welcome.guide },
+  ]);
+  const [input, setInput] = useState("");
+
+  // Auto-scroll to newest message
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSend = () => {
+    const text = input.trim();
+    if (!text) return;
+
+    // Add user message
+    const userMsg = { from: "user", text };
+    const { answer, guide } = getResponse(text);
+    const botMsg = { from: "bot", text: answer, guide };
+
+    setMessages((prev) => [...prev, userMsg, botMsg]);
+    setInput("");
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleSend();
+  };
+
+  const handleGuide = (path) => {
+    closeChat();
+    navigate(path);
+  };
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col bg-gray-950 border border-slate-700 text-white rounded-2xl shadow-2xl w-96 h-125">

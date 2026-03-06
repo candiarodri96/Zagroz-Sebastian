@@ -9,3 +9,5 @@ psycopg2-binary
 bcrypt
 PyJWT
 pydantic-settings
+fuse.js
+pydantic[email]
