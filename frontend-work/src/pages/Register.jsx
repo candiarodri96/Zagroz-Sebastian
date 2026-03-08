@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, Building2 } from "lucide-react";
+import { User, Building2, Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -11,6 +11,9 @@ export default function Register() {
     password: "",
     role: "",
   });
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +22,7 @@ export default function Register() {
   };
 
   const selectRole = (role) => {
-    setFormData({ ...formData, role });
+    setFormData({ ...formData, role, first_name: "", last_name: "", email: "" });
   };
 
   const handleSubmit = async (e) => {
@@ -36,6 +39,11 @@ export default function Register() {
       return;
     }
 
+    if (formData.password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -49,10 +57,8 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle validation errors (422) — detail is an array
         if (Array.isArray(data.detail)) {
           const messages = data.detail.map((err) => {
-            // Make field-specific messages more readable
             const field = err.loc?.[1] || "field";
             return `${field}: ${err.msg}`;
           }).join("\n");
@@ -200,15 +206,55 @@ export default function Register() {
               <label className="block text-sm text-slate-400 mb-1">
                 Password
               </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength={8}
-                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  minLength={8}
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 pr-12 text-white text-sm focus:outline-none focus:border-blue-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  className={`w-full bg-slate-800 border rounded-lg px-4 py-3 pr-12 text-white text-sm focus:outline-none ${
+                    confirmPassword && confirmPassword !== formData.password
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-slate-600 focus:border-blue-500"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {confirmPassword && confirmPassword !== formData.password && (
+                <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
+              )}
             </div>
 
             {/* Error */}
