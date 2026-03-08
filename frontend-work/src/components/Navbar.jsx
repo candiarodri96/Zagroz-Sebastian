@@ -219,9 +219,14 @@ function Navbar({ showButtons = true, openChat }) {
               )}
 
               {!isLoggedIn && (
-                <Link to="/login" className="hidden sm:block hover:text-white transition-colors">
-                  Login
-                </Link>
+                <>
+                  <Link to="/login" className="hidden sm:block hover:text-white transition-colors">
+                    Login
+                  </Link>
+                  <Link to="/register" className="hidden sm:block hover:text-white transition-colors">
+                    Register
+                  </Link>
+                </>
               )}
 
               {/* Notification bell */}

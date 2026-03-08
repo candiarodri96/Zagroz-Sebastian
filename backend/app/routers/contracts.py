@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -26,7 +27,7 @@ def create_contract(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if not ad:
         raise HTTPException(status_code=404, detail="Ad not found")
 
@@ -36,15 +37,13 @@ def create_contract(
     if ad.status != "negotiation":
         raise HTTPException(status_code=400, detail=f"Ad must be in 'negotiation'. Current: '{ad.status}'")
 
-    existing = db.query(Contract).filter(Contract.ad_id == ad_id).first()
+    existing = db.execute(select(Contract).where(Contract.ad_id == ad_id)).scalars().first()
     if existing:
         raise HTTPException(status_code=400, detail="Contract already exists for this ad")
 
-    selected_offer = (
-        db.query(Offer)
-        .filter(Offer.ad_id == ad_id, Offer.status == "selected")
-        .first()
-    )
+    selected_offer = db.execute(
+        select(Offer).where(Offer.ad_id == ad_id, Offer.status == "selected")
+    ).scalars().first()
     if not selected_offer:
         raise HTTPException(status_code=400, detail="No selected offer found")
 
@@ -59,7 +58,6 @@ def create_contract(
 
     db.add(contract)
 
-    # Notify the company
     create_notification(
         db,
         user_id=selected_offer.user_id,
@@ -83,7 +81,7 @@ def sign_contract(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    contract = db.query(Contract).filter(Contract.ad_id == ad_id).first()
+    contract = db.execute(select(Contract).where(Contract.ad_id == ad_id)).scalars().first()
     if not contract:
         raise HTTPException(status_code=404, detail="Contract not found")
 
@@ -116,9 +114,8 @@ def sign_contract(
     validate_transition(current_status, new_status, CONTRACT_TRANSITIONS, "Contract")
     contract.status = new_status
 
-    # Notify the other party
     other_id = contract.company_id if current_user.id == contract.customer_id else contract.customer_id
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
 
     create_notification(
         db,
@@ -133,15 +130,13 @@ def sign_contract(
         contract.signed_at = datetime.now(timezone.utc)
         ad.status = "active_contract"
 
-        other_offers = (
-            db.query(Offer)
-            .filter(
+        other_offers = db.execute(
+            select(Offer).where(
                 Offer.ad_id == ad_id,
                 Offer.id != contract.offer_id,
                 Offer.status.in_(["pending", "selected"]),
             )
-            .all()
-        )
+        ).scalars().all()
         for offer in other_offers:
             offer.status = "rejected"
 
@@ -159,7 +154,7 @@ def cancel_contract(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    contract = db.query(Contract).filter(Contract.ad_id == ad_id).first()
+    contract = db.execute(select(Contract).where(Contract.ad_id == ad_id)).scalars().first()
     if not contract:
         raise HTTPException(status_code=404, detail="Contract not found")
 
@@ -170,15 +165,14 @@ def cancel_contract(
 
     contract.status = "cancelled"
 
-    offer = db.query(Offer).filter(Offer.id == contract.offer_id).first()
+    offer = db.execute(select(Offer).where(Offer.id == contract.offer_id)).scalars().first()
     if offer:
         offer.status = "failed_negotiation"
 
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if ad:
         ad.status = "open"
 
-    # Notify the other party
     other_id = contract.company_id if current_user.id == contract.customer_id else contract.customer_id
     create_notification(
         db,
@@ -203,7 +197,7 @@ def complete_contract(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    contract = db.query(Contract).filter(Contract.ad_id == ad_id).first()
+    contract = db.execute(select(Contract).where(Contract.ad_id == ad_id)).scalars().first()
     if not contract:
         raise HTTPException(status_code=404, detail="Contract not found")
 
@@ -214,11 +208,10 @@ def complete_contract(
 
     contract.status = "completed"
 
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if ad:
         ad.status = "closed"
 
-    # Notify the company
     create_notification(
         db,
         user_id=contract.company_id,
@@ -242,7 +235,7 @@ def get_contract(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    contract = db.query(Contract).filter(Contract.ad_id == ad_id).first()
+    contract = db.execute(select(Contract).where(Contract.ad_id == ad_id)).scalars().first()
     if not contract:
         raise HTTPException(status_code=404, detail="Contract not found")
 
