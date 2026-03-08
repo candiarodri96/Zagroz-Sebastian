@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -13,15 +14,13 @@ router = APIRouter()
 
 def get_negotiation_parties(db: Session, ad_id: int) -> tuple[int, int]:
     """Returns (customer_id, company_id) for the active negotiation."""
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if not ad:
         raise HTTPException(status_code=404, detail="Ad not found")
 
-    selected_offer = (
-        db.query(Offer)
-        .filter(Offer.ad_id == ad_id, Offer.status == "selected")
-        .first()
-    )
+    selected_offer = db.execute(
+        select(Offer).where(Offer.ad_id == ad_id, Offer.status == "selected")
+    ).scalars().first()
     if not selected_offer:
         raise HTTPException(status_code=400, detail="No active negotiation on this ad")
 
@@ -38,7 +37,7 @@ def send_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if not ad:
         raise HTTPException(status_code=404, detail="Ad not found")
 
@@ -92,7 +91,7 @@ def get_messages(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if not ad:
         raise HTTPException(status_code=404, detail="Ad not found")
 
@@ -100,16 +99,15 @@ def get_messages(
     if current_user.id not in (customer_id, company_id):
         raise HTTPException(status_code=403, detail="You are not part of this negotiation")
 
-    messages = (
-        db.query(Message)
-        .filter(Message.ad_id == ad_id)
+    messages = db.execute(
+        select(Message)
+        .where(Message.ad_id == ad_id)
         .order_by(Message.created_at.asc())
-        .all()
-    )
+    ).scalars().all()
 
     result = []
     for msg in messages:
-        sender = db.query(User).filter(User.id == msg.sender_id).first()
+        sender = db.execute(select(User).where(User.id == msg.sender_id)).scalars().first()
         result.append(
             MessageOut(
                 id=msg.id,

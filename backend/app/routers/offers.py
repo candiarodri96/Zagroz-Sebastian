@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -22,7 +23,7 @@ def create_offer(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if not ad:
         raise HTTPException(status_code=404, detail="Ad not found")
 
@@ -32,15 +33,13 @@ def create_offer(
     if ad.user_id == current_user.id:
         raise HTTPException(status_code=400, detail="You cannot bid on your own ad")
 
-    existing = (
-        db.query(Offer)
-        .filter(
+    existing = db.execute(
+        select(Offer).where(
             Offer.ad_id == ad_id,
             Offer.user_id == current_user.id,
             Offer.status == "pending",
         )
-        .first()
-    )
+    ).scalars().first()
     if existing:
         raise HTTPException(status_code=400, detail="You already have a pending offer on this ad")
 
@@ -53,7 +52,6 @@ def create_offer(
     )
     db.add(new_offer)
 
-    # Notify the ad owner
     create_notification(
         db,
         user_id=ad.user_id,
@@ -79,7 +77,9 @@ def update_offer(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    offer = db.query(Offer).filter(Offer.id == offer_id, Offer.ad_id == ad_id).first()
+    offer = db.execute(
+        select(Offer).where(Offer.id == offer_id, Offer.ad_id == ad_id)
+    ).scalars().first()
     if not offer:
         raise HTTPException(status_code=404, detail="Offer not found")
 
@@ -112,7 +112,9 @@ def withdraw_offer(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    offer = db.query(Offer).filter(Offer.id == offer_id, Offer.ad_id == ad_id).first()
+    offer = db.execute(
+        select(Offer).where(Offer.id == offer_id, Offer.ad_id == ad_id)
+    ).scalars().first()
     if not offer:
         raise HTTPException(status_code=404, detail="Offer not found")
 
@@ -137,7 +139,7 @@ def select_offer(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if not ad:
         raise HTTPException(status_code=404, detail="Ad not found")
 
@@ -147,7 +149,9 @@ def select_offer(
     if ad.status != "open":
         raise HTTPException(status_code=400, detail=f"Ad is '{ad.status}', must be 'open' to select an offer")
 
-    offer = db.query(Offer).filter(Offer.id == offer_id, Offer.ad_id == ad_id).first()
+    offer = db.execute(
+        select(Offer).where(Offer.id == offer_id, Offer.ad_id == ad_id)
+    ).scalars().first()
     if not offer:
         raise HTTPException(status_code=404, detail="Offer not found")
 
@@ -156,7 +160,6 @@ def select_offer(
     offer.status = "selected"
     ad.status = "negotiation"
 
-    # Notify the company that their offer was selected
     create_notification(
         db,
         user_id=offer.user_id,
@@ -181,7 +184,7 @@ def fail_negotiation(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if not ad:
         raise HTTPException(status_code=404, detail="Ad not found")
 
@@ -191,7 +194,9 @@ def fail_negotiation(
     if ad.status != "negotiation":
         raise HTTPException(status_code=400, detail=f"Ad must be in 'negotiation' to fail. Current: '{ad.status}'")
 
-    offer = db.query(Offer).filter(Offer.id == offer_id, Offer.ad_id == ad_id).first()
+    offer = db.execute(
+        select(Offer).where(Offer.id == offer_id, Offer.ad_id == ad_id)
+    ).scalars().first()
     if not offer:
         raise HTTPException(status_code=404, detail="Offer not found")
 
@@ -200,7 +205,6 @@ def fail_negotiation(
     offer.status = "failed_negotiation"
     ad.status = "open"
 
-    # Notify the company
     create_notification(
         db,
         user_id=offer.user_id,
@@ -224,15 +228,13 @@ def get_offers(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    ad = db.query(Ad).filter(Ad.id == ad_id).first()
+    ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if not ad:
         raise HTTPException(status_code=404, detail="Ad not found")
 
     if ad.user_id == current_user.id:
-        return db.query(Offer).filter(Offer.ad_id == ad_id).all()
+        return db.execute(select(Offer).where(Offer.ad_id == ad_id)).scalars().all()
 
-    return (
-        db.query(Offer)
-        .filter(Offer.ad_id == ad_id, Offer.user_id == current_user.id)
-        .all()
-    )
+    return db.execute(
+        select(Offer).where(Offer.ad_id == ad_id, Offer.user_id == current_user.id)
+    ).scalars().all()

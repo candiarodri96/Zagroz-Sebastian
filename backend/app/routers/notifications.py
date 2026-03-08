@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select, update, func
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -15,13 +16,12 @@ def get_my_notifications(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return (
-        db.query(Notification)
-        .filter(Notification.user_id == current_user.id)
+    return db.execute(
+        select(Notification)
+        .where(Notification.user_id == current_user.id)
         .order_by(Notification.created_at.desc())
         .limit(50)
-        .all()
-    )
+    ).scalars().all()
 
 
 @router.get("/unread-count")
@@ -29,14 +29,14 @@ def get_unread_count(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    count = (
-        db.query(Notification)
-        .filter(
+    count = db.execute(
+        select(func.count())
+        .select_from(Notification)
+        .where(
             Notification.user_id == current_user.id,
-            Notification.is_read == False,
+            Notification.is_read.is_(False),
         )
-        .count()
-    )
+    ).scalar()
     return {"count": count}
 
 
@@ -46,7 +46,9 @@ def mark_as_read(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    notification = db.query(Notification).filter(Notification.id == notification_id).first()
+    notification = db.execute(
+        select(Notification).where(Notification.id == notification_id)
+    ).scalars().first()
     if not notification:
         raise HTTPException(status_code=404, detail="Notification not found")
     if notification.user_id != current_user.id:
@@ -63,9 +65,13 @@ def mark_all_as_read(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    db.query(Notification).filter(
-        Notification.user_id == current_user.id,
-        Notification.is_read == False,
-    ).update({"is_read": True})
+    db.execute(
+        update(Notification)
+        .where(
+            Notification.user_id == current_user.id,
+            Notification.is_read.is_(False),
+        )
+        .values(is_read=True)
+    )
     db.commit()
     return {"message": "All notifications marked as read"}

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -24,7 +25,10 @@ oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=
 # =========================
 @router.post("/register", response_model=UserOut)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    existing = db.query(User).filter(User.email == user_data.email).first()
+    existing = db.execute(
+        select(User).where(User.email == user_data.email)
+    ).scalars().first()
+
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -51,7 +55,9 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 # =========================
 @router.post("/login")
 def login(user_data: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == user_data.email).first()
+    user = db.execute(
+        select(User).where(User.email == user_data.email)
+    ).scalars().first()
 
     if not user or not verify_password(user_data.password, user.password_hash):
         raise HTTPException(
@@ -97,7 +103,9 @@ def get_current_user(
             detail="Invalid token payload",
         )
 
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    user = db.execute(
+        select(User).where(User.id == int(user_id))
+    ).scalars().first()
 
     if user is None:
         raise HTTPException(
@@ -125,7 +133,9 @@ def get_optional_user(
         user_id = payload.get("sub")
         if user_id is None:
             return None
-        user = db.query(User).filter(User.id == int(user_id)).first()
+        user = db.execute(
+            select(User).where(User.id == int(user_id))
+        ).scalars().first()
         return user
     except Exception:
         return None
