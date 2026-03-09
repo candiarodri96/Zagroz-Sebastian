@@ -14,6 +14,7 @@ class ReviewOut(BaseModel):
     reviewer_id: int
     reviewee_id: int
     reviewer_name: str = ""
+    ad_title: str = ""
     rating: int
     comment: str | None
     created_at: datetime

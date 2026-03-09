@@ -100,6 +100,10 @@ def get_user_reviews(
             select(User).where(User.id == review.reviewer_id)
         ).scalars().first()
         review.reviewer_name = f"{reviewer.first_name} {reviewer.last_name}" if reviewer else "Unknown"
+
+        ad = db.execute(select(Ad).where(Ad.id == review.ad_id)).scalars().first()
+        review.ad_title = ad.title if ad else ""
+
         result.append(review)
 
     return result
