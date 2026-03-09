@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FileText, Check, X, ArrowLeft } from "lucide-react";
+import ReviewSection from "../components/ReviewSection";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -324,6 +325,7 @@ export default function ContractView() {
           )}
         </div>
       </div>
+      <ReviewSection adId={adId} contractStatus={contract?.status} />
     </div>
   );
 }

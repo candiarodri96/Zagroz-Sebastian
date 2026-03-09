@@ -9,6 +9,7 @@ from app.routers.offers import router as offers_router
 from app.routers.contracts import router as contracts_router
 from app.routers.messages import router as messages_router
 from app.routers.notifications import router as notifications_router
+from app.routers.reviews import router as reviews_router
 
 from app.db.database import engine
 from app.models.models import Base
@@ -16,7 +17,6 @@ from app.models.models import Base
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Safe mode — only creates tables that don't exist yet
     Base.metadata.create_all(bind=engine)
     print("✅ Tables ready")
     yield
@@ -42,3 +42,4 @@ app.include_router(offers_router, prefix="/ads", tags=["offers"])
 app.include_router(contracts_router, prefix="/ads", tags=["contracts"])
 app.include_router(messages_router, prefix="/ads", tags=["messages"])
 app.include_router(notifications_router)
+app.include_router(reviews_router, tags=["Reviews"])

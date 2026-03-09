@@ -1,5 +1,6 @@
 import React from 'react';
 import { Briefcase, MapPin, Building, Users, Mail, Plus, UserRoundCog } from 'lucide-react';
+import ProfileReviews from "../components/ProfileReviews";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -110,7 +111,7 @@ export default function Profile() {
 
           </div>
         </div>
-
+        <ProfileReviews userId={user?.id} />
       </div>
 
     </div>
