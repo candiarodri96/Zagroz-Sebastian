@@ -100,7 +100,9 @@ function Navbar({ showButtons = true, openChat }) {
     setNotifOpen(false);
 
     if (notif.ad_id) {
-      if (["new_message", "offer_selected"].includes(notif.type)) {
+      if (notif.type === "new_message") {
+        navigate(`/messages/${notif.ad_id}`);
+      } else if (notif.type === "offer_selected") {
         navigate(`/chat/${notif.ad_id}`);
       } else if (["contract_created", "contract_signed", "contract_completed"].includes(notif.type)) {
         navigate(`/contract/${notif.ad_id}`);

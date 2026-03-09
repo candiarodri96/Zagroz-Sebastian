@@ -35,6 +35,7 @@ function App() {
         <Route path="/chat/:adId" element={<NegotiationChat />} />
         <Route path="/contract/:adId" element={<ContractView />} />
         <Route path="/messages" element={<Messages />} />
+        <Route path="/messages/:adId" element={<NegotiationChat />} />
       </Routes>
 
       {isChatOpen && <Chatbot closeChat={() => setIsChatOpen(false)} />}

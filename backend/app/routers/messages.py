@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -5,11 +6,105 @@ from typing import List
 
 from app.db.database import get_db
 from app.models.models import Ad, Offer, Message, User
-from app.schemas.message import MessageCreate, MessageOut
+from app.schemas.message import MessageCreate, MessageOut, ConversationOut
 from app.core.auth import get_current_user
 from app.services.notifications import create_notification
 
 router = APIRouter()
+conversations_router = APIRouter()
+
+
+# =========================
+# GET CONVERSATIONS (all chats the logged-in user is part of)
+# =========================
+@conversations_router.get("/conversations", response_model=List[ConversationOut])
+def get_conversations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = []
+
+    # Ads owned by user (customer side) in active chat phases
+    customer_ads = db.execute(
+        select(Ad).where(
+            Ad.user_id == current_user.id,
+            Ad.status.in_(["negotiation", "active_contract"]),
+        )
+    ).scalars().all()
+
+    for ad in customer_ads:
+        selected_offer = db.execute(
+            select(Offer).where(Offer.ad_id == ad.id, Offer.status == "selected")
+        ).scalars().first()
+
+        other_user = None
+        if selected_offer:
+            other_user = db.execute(
+                select(User).where(User.id == selected_offer.user_id)
+            ).scalars().first()
+
+        last_msg = db.execute(
+            select(Message)
+            .where(Message.ad_id == ad.id)
+            .order_by(Message.created_at.desc())
+        ).scalars().first()
+
+        result.append(ConversationOut(
+            ad_id=ad.id,
+            ad_title=ad.title,
+            other_user_id=other_user.id if other_user else None,
+            other_user_name=f"{other_user.first_name} {other_user.last_name}" if other_user else "Pending",
+            last_message=last_msg.content if last_msg else None,
+            last_message_at=last_msg.created_at if last_msg else ad.updated_at,
+            has_unread=last_msg.sender_id != current_user.id if last_msg else False,
+        ))
+
+    # Ads where user is company (has a selected offer) in active chat phases
+    selected_offers = db.execute(
+        select(Offer).where(
+            Offer.user_id == current_user.id,
+            Offer.status == "selected",
+        )
+    ).scalars().all()
+
+    for offer in selected_offers:
+        ad = db.execute(
+            select(Ad).where(
+                Ad.id == offer.ad_id,
+                Ad.status.in_(["negotiation", "active_contract"]),
+            )
+        ).scalars().first()
+
+        if not ad:
+            continue
+
+        # Skip if already added from the customer side
+        if any(c.ad_id == ad.id for c in result):
+            continue
+
+        customer = db.execute(
+            select(User).where(User.id == ad.user_id)
+        ).scalars().first()
+
+        last_msg = db.execute(
+            select(Message)
+            .where(Message.ad_id == ad.id)
+            .order_by(Message.created_at.desc())
+        ).scalars().first()
+
+        result.append(ConversationOut(
+            ad_id=ad.id,
+            ad_title=ad.title,
+            other_user_id=customer.id if customer else None,
+            other_user_name=f"{customer.first_name} {customer.last_name}" if customer else "Unknown",
+            last_message=last_msg.content if last_msg else None,
+            last_message_at=last_msg.created_at if last_msg else ad.updated_at,
+            has_unread=last_msg.sender_id != current_user.id if last_msg else False,
+        ))
+
+    _epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+    result.sort(key=lambda c: c.last_message_at or _epoch, reverse=True)
+    return result
 
 
 def get_negotiation_parties(db: Session, ad_id: int) -> tuple[int, int]:
