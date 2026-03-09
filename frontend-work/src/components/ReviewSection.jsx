@@ -40,7 +40,7 @@ export default function ReviewSection({ adId, contractStatus }) {
   const [success, setSuccess] = useState("");
 
   const API = import.meta.env.VITE_API_URL;
-  const token = localStorage.getItem("token");
+  const token = JSON.parse(localStorage.getItem("user"))?.access_token;
 
   useEffect(() => {
     checkMyReview();
