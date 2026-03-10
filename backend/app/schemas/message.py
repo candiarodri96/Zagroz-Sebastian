@@ -15,14 +15,13 @@ class MessageCreate(BaseModel):
 # =========================
 class MessageOut(BaseModel):
     id: int
-    ad_id: int
+    conversation_id: int
     sender_id: int
     sender_name: str
     content: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 # =========================
@@ -36,3 +35,5 @@ class ConversationOut(BaseModel):
     last_message: Optional[str]
     last_message_at: Optional[datetime]
     has_unread: bool
+
+    model_config = {"from_attributes": True}

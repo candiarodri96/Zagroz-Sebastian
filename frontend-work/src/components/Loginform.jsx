@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from "react-router-dom"
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function Loginform() {
   const[email, setEmail] = useState("");
   const[password, setPassword] = useState("");
@@ -14,16 +16,12 @@ export default function Loginform() {
     setLoading(true);
 
     try {
-      const formData = new URLSearchParams();
-      formData.append("username", email);
-      formData.append("password", password);
-console.log("Hello")
-      const response = await fetch("http://13.62.178.191:8000/auth/login", {
+      const response = await fetch(`${API}/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-console.log("Response", response.status)
+
       if (!response.ok) {
         const data = await response.json();
         setError(data.detail || "Login failed");
@@ -31,7 +29,8 @@ console.log("Response", response.status)
       }
 
       const data = await response.json();
-      localStorage.setItem("user", JSON.stringify(data));
+      // Flatten so the app can access user.access_token, user.first_name, etc. at the root level
+      localStorage.setItem("user", JSON.stringify({ ...data.user, access_token: data.access_token }));
       navigate("/profile");
     } catch (err) {
       setError("Could not connect to server");
