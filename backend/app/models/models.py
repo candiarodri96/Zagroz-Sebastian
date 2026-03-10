@@ -58,7 +58,7 @@ class Ad(Base):
     user = relationship("User", back_populates="ads")
     offers = relationship("Offer", back_populates="ad", cascade="all, delete")
     contract = relationship("Contract", back_populates="ad", uselist=False, cascade="all, delete")
-    messages = relationship("Message", back_populates="ad", cascade="all, delete")
+    conversation = relationship("Conversation", back_populates="ad", uselist=False, cascade="all, delete")
 
 
 # =========================
@@ -136,15 +136,39 @@ class Contract(Base):
 
 
 # =========================
+# CONVERSATION
+# =========================
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    ad_id: Mapped[int] = mapped_column(
+        ForeignKey("ads.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+    )
+    customer_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    company_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, nullable=False
+    )
+
+    # Relationships
+    ad = relationship("Ad", back_populates="conversation")
+    messages = relationship("Message", back_populates="conversation", cascade="all, delete")
+
+
+# =========================
 # MESSAGE (Negotiation Chat)
 # =========================
 class Message(Base):
     __tablename__ = "messages"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-
-    ad_id: Mapped[int] = mapped_column(
-        ForeignKey("ads.id", ondelete="CASCADE"), nullable=False, index=True
+    conversation_id: Mapped[int] = mapped_column(
+        ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False, index=True
     )
     sender_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
@@ -156,7 +180,7 @@ class Message(Base):
     )
 
     # Relationships
-    ad = relationship("Ad", back_populates="messages")
+    conversation = relationship("Conversation", back_populates="messages")
     sender = relationship("User")
 
 

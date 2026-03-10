@@ -86,7 +86,7 @@ export default function NegotiationChat() {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`${API}/ads/${adId}/messages`, {
+      const response = await fetch(`${API}/conversations/${adId}/messages`, {
         headers: { Authorization: `Bearer ${user.access_token}` },
       });
 
@@ -113,7 +113,7 @@ export default function NegotiationChat() {
     setSending(true);
 
     try {
-      const response = await fetch(`${API}/ads/${adId}/messages`, {
+      const response = await fetch(`${API}/conversations/${adId}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
