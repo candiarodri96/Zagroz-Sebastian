@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/Searchbar";
 import ServiceCard from "../components/Card";
@@ -9,6 +9,7 @@ const API = import.meta.env.VITE_API_URL;
 export default function Results() {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({ query: "", category: "All Categories", sortBy: "newest" });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,20 +28,48 @@ export default function Results() {
     }
   };
 
-  if (loading) return <p className="text-center mt-24">Loading...</p>;
+  const filteredAds = useMemo(() => {
+    let result = [...ads];
+
+    if (filters.query) {
+      const q = filters.query.toLowerCase();
+      result = result.filter(
+        (ad) =>
+          ad.title?.toLowerCase().includes(q) ||
+          ad.description?.toLowerCase().includes(q) ||
+          ad.city?.toLowerCase().includes(q)
+      );
+    }
+
+    if (filters.category !== "All Categories") {
+      result = result.filter(
+        (ad) => ad.category?.toLowerCase() === filters.category.toLowerCase()
+      );
+    }
+
+    if (filters.sortBy === "oldest") {
+      result.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    } else {
+      result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+
+    return result;
+  }, [ads, filters]);
+
+  if (loading) return <p className="text-center mt-24 text-slate-400">Loading...</p>;
 
   return (
     <div className="max-w-6xl mx-auto px-6 mt-25">
       <div className="flex gap-4 mb-12 justify-center">
-        <SearchBar />
+        <SearchBar onFilter={setFilters} />
       </div>
 
-      {ads.length === 0 && (
-        <p className="text-center text-slate-400">No ads posted yet.</p>
+      {filteredAds.length === 0 && (
+        <p className="text-center text-slate-400">No ads match your search.</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {ads.map((ad) => (
+        {filteredAds.map((ad) => (
           <div
             key={ad.id}
             onClick={() => navigate(`/ad/${ad.id}`)}
