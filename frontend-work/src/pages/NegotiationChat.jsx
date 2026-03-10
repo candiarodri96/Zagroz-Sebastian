@@ -92,7 +92,7 @@ export default function NegotiationChat() {
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data.detail || "Failed to load messages");
+        setError(typeof data.detail === "string" ? data.detail : "Failed to load messages");
         setLoading(false);
         return;
       }
@@ -127,7 +127,7 @@ export default function NegotiationChat() {
         fetchMessages();
       } else {
         const data = await response.json();
-        setError(data.detail || "Failed to send message");
+        setError(typeof data.detail === "string" ? data.detail : "Failed to send message");
       }
     } catch (err) {
       setError("Could not connect to server");
