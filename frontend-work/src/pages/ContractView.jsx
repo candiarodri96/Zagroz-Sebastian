@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FileText, Check, X, ArrowLeft } from "lucide-react";
+import { FileText, Check, X, ArrowLeft, Download } from "lucide-react";
 import ReviewSection from "../components/ReviewSection";
 
 const API = import.meta.env.VITE_API_URL;
@@ -13,6 +13,7 @@ export default function ContractView() {
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
@@ -141,6 +142,73 @@ export default function ContractView() {
       alert("Could not connect to server");
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const generateAndUploadPdf = async () => {
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text("Contract", 20, 20);
+
+      doc.setFontSize(11);
+      doc.text(`Ad #${contract.ad_id}`, 20, 35);
+      doc.text(`Status: ${contract.status.replace(/_/g, " ")}`, 20, 45);
+      doc.text(`Agreed Amount: ${contract.agreed_amount} kr`, 20, 55);
+      doc.text(`Customer ID: ${contract.customer_id}`, 20, 65);
+      doc.text(`Company ID: ${contract.company_id}`, 20, 75);
+      doc.text(`Created: ${new Date(contract.created_at).toLocaleDateString()}`, 20, 85);
+      if (contract.signed_at) {
+        doc.text(`Signed: ${new Date(contract.signed_at).toLocaleString()}`, 20, 95);
+      }
+      if (contract.details) {
+        doc.text("Details:", 20, 110);
+        const lines = doc.splitTextToSize(contract.details, 170);
+        doc.text(lines, 20, 120);
+      }
+
+      const filename = `contract-${contract.ad_id}-${Date.now()}.pdf`;
+      const base64 = doc.output("datauristring").split(",")[1];
+
+      // Upload to server
+      await fetch(`${API}/ads/${adId}/contract/pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.access_token}`,
+        },
+        body: JSON.stringify({ pdf_data: base64, pdf_filename: filename }),
+      });
+
+      // Trigger download
+      doc.save(filename);
+      fetchContract();
+    } catch (err) {
+      alert("Failed to generate PDF. Make sure jspdf is installed.");
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  const downloadExistingPdf = async () => {
+    setPdfLoading(true);
+    try {
+      const res = await fetch(`${API}/ads/${adId}/contract/pdf`, {
+        headers: { Authorization: `Bearer ${user.access_token}` },
+      });
+      if (!res.ok) { alert("PDF not found"); return; }
+      const data = await res.json();
+      const link = document.createElement("a");
+      link.href = `data:application/pdf;base64,${data.pdf_data}`;
+      link.download = data.pdf_filename;
+      link.click();
+    } catch {
+      alert("Failed to download PDF");
+    } finally {
+      setPdfLoading(false);
     }
   };
 
@@ -322,6 +390,26 @@ export default function ContractView() {
             <div className="flex-1 text-center py-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-lg font-medium">
               ✅ Work Completed
             </div>
+          )}
+
+          {(contract.status === "fully_signed" || contract.status === "completed") && (
+            contract.pdf_filename ? (
+              <button
+                onClick={downloadExistingPdf}
+                disabled={pdfLoading}
+                className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white py-3 px-5 rounded-lg font-medium transition-colors"
+              >
+                <Download size={18} /> {pdfLoading ? "Downloading..." : "Download PDF"}
+              </button>
+            ) : (
+              <button
+                onClick={generateAndUploadPdf}
+                disabled={pdfLoading}
+                className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white py-3 px-5 rounded-lg font-medium transition-colors"
+              >
+                <Download size={18} /> {pdfLoading ? "Generating..." : "Generate PDF"}
+              </button>
+            )
           )}
         </div>
       </div>

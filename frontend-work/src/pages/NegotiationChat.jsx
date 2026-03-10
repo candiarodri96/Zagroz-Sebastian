@@ -86,13 +86,13 @@ export default function NegotiationChat() {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`${API}/ads/${adId}/messages`, {
+      const response = await fetch(`${API}/conversations/${adId}/messages`, {
         headers: { Authorization: `Bearer ${user.access_token}` },
       });
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data.detail || "Failed to load messages");
+        setError(typeof data.detail === "string" ? data.detail : "Failed to load messages");
         setLoading(false);
         return;
       }
@@ -113,7 +113,7 @@ export default function NegotiationChat() {
     setSending(true);
 
     try {
-      const response = await fetch(`${API}/ads/${adId}/messages`, {
+      const response = await fetch(`${API}/conversations/${adId}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -127,7 +127,7 @@ export default function NegotiationChat() {
         fetchMessages();
       } else {
         const data = await response.json();
-        setError(data.detail || "Failed to send message");
+        setError(typeof data.detail === "string" ? data.detail : "Failed to send message");
       }
     } catch (err) {
       setError("Could not connect to server");
@@ -189,7 +189,7 @@ export default function NegotiationChat() {
       {/* Contract action bar */}
       <div className="px-6 py-3 border-b border-slate-700 bg-slate-900/50">
         {/* Negotiation phase — no contract yet */}
-        {ad?.status === "negotiation" && !contract && isAdOwner && (
+        {ad?.status === "negotiation" && !contract && !isAdOwner && user?.role === "company" && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-400">
               Ready to proceed? Create a contract to finalize the deal.
@@ -203,9 +203,9 @@ export default function NegotiationChat() {
           </div>
         )}
 
-        {ad?.status === "negotiation" && !contract && !isAdOwner && (
+        {ad?.status === "negotiation" && !contract && isAdOwner && (
           <p className="text-sm text-yellow-400 text-center">
-            ⏳ Waiting for the customer to create a contract...
+            ⏳ Waiting for the company to create a contract...
           </p>
         )}
 

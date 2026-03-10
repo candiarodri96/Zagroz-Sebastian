@@ -23,7 +23,8 @@ export default function CreatePost() {
   const [category, setCategory] = useState("");
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
-  const [budget, setBudget] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ export default function CreatePost() {
     }
 
     try {
-      const response = await fetch("http://13.62.178.191:8000/ads/", {
+      const response = await fetch(`${API}/ads/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -53,7 +54,8 @@ export default function CreatePost() {
           category,
           city,
           address: address || null,
-          budget: parseInt(budget),
+          start_date: startDate || null,
+          end_date: endDate || null,
         }),
       });
 
@@ -159,17 +161,25 @@ export default function CreatePost() {
           />
         </div>
 
-        <div>
-          <label className="block mb-2 text-sm font-medium">Budget (kr)</label>
-          <input
-            type="number"
-            min="1"
-            className="w-full border border-slate-300 p-3 rounded-lg bg-slate-800 text-white"
-            placeholder="e.g. 15000"
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-            required
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block mb-2 text-sm font-medium">Start Date</label>
+            <input
+              type="date"
+              className="w-full border border-slate-300 p-3 rounded-lg bg-slate-800 text-white"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm font-medium">End Date</label>
+            <input
+              type="date"
+              className="w-full border border-slate-300 p-3 rounded-lg bg-slate-800 text-white"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
         </div>
 
         <button

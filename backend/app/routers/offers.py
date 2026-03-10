@@ -48,6 +48,7 @@ def create_offer(
         user_id=current_user.id,
         amount=offer.amount,
         estimated_time=offer.estimated_time,
+        available_to_start=offer.available_to_start,
         message=offer.message,
     )
     db.add(new_offer)
