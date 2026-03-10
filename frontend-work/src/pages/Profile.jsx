@@ -435,7 +435,7 @@ export default function Profile() {
           </div>
         </div>
 
-        <ProfileReviews userId={user?.id} />
+        <ProfileReviews userId={user?.id} token={user?.access_token} />
       </div>
     </div>
   );

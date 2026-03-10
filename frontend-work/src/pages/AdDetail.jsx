@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MapPin, Calendar, DollarSign } from "lucide-react";
+import { MapPin, Calendar } from "lucide-react";
 import categoryImages from "../utils/categoryImages";
 
 const API = import.meta.env.VITE_API_URL;
@@ -12,6 +12,8 @@ export default function AdDetail() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState("");
+  const [offerEstimatedTime, setOfferEstimatedTime] = useState("");
+  const [offerAvailableToStart, setOfferAvailableToStart] = useState("");
   const [offerMessage, setOfferMessage] = useState("");
   const [offerError, setOfferError] = useState("");
   const [offerLoading, setOfferLoading] = useState(false);
@@ -63,6 +65,8 @@ export default function AdDetail() {
         },
         body: JSON.stringify({
           amount: parseInt(offerAmount),
+          estimated_time: offerEstimatedTime || null,
+          available_to_start: offerAvailableToStart || null,
           message: offerMessage || null,
         }),
       });
@@ -78,6 +82,8 @@ export default function AdDetail() {
         setShowModal(false);
         setOfferSuccess(false);
         setOfferAmount("");
+        setOfferEstimatedTime("");
+        setOfferAvailableToStart("");
         setOfferMessage("");
       }, 2000);
     } catch (err) {
@@ -111,8 +117,16 @@ export default function AdDetail() {
         </div>
 
         <div className="text-right">
-          <p className="text-sm text-slate-400">Budget</p>
-          <p className="text-2xl font-bold text-green-400">{ad.budget} kr</p>
+          {ad.start_date && (
+            <p className="text-sm text-slate-300">
+              <span className="text-slate-400">Start:</span> {new Date(ad.start_date).toLocaleDateString()}
+            </p>
+          )}
+          {ad.end_date && (
+            <p className="text-sm text-slate-300">
+              <span className="text-slate-400">End:</span> {new Date(ad.end_date).toLocaleDateString()}
+            </p>
+          )}
         </div>
       </div>
 
@@ -279,21 +293,41 @@ export default function AdDetail() {
                   <label className="block mb-2 text-sm font-medium">
                     Your Price (kr)
                   </label>
-                  <div className="relative">
-                    <DollarSign size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-full border border-slate-600 p-3 rounded-lg bg-slate-800 text-white"
+                    placeholder="e.g. 15000"
+                    value={offerAmount}
+                    onChange={(e) => setOfferAmount(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block mb-2 text-sm font-medium">
+                      Estimated Duration <span className="text-slate-500">(optional)</span>
+                    </label>
                     <input
-                      type="number"
-                      min="1"
-                      className="w-full border border-slate-600 p-3 pl-10 rounded-lg bg-slate-800 text-white"
-                      placeholder="e.g. 15000"
-                      value={offerAmount}
-                      onChange={(e) => setOfferAmount(e.target.value)}
-                      required
+                      type="text"
+                      className="w-full border border-slate-600 p-3 rounded-lg bg-slate-800 text-white"
+                      placeholder="e.g. 2 weeks"
+                      value={offerEstimatedTime}
+                      onChange={(e) => setOfferEstimatedTime(e.target.value)}
                     />
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Ad budget: {ad.budget} kr
-                  </p>
+                  <div>
+                    <label className="block mb-2 text-sm font-medium">
+                      Available to Start <span className="text-slate-500">(optional)</span>
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full border border-slate-600 p-3 rounded-lg bg-slate-800 text-white"
+                      value={offerAvailableToStart}
+                      onChange={(e) => setOfferAvailableToStart(e.target.value)}
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -301,7 +335,7 @@ export default function AdDetail() {
                     Message <span className="text-slate-500">(optional)</span>
                   </label>
                   <textarea
-                    className="w-full border border-slate-600 p-3 rounded-lg bg-slate-800 text-white h-28 resize-none"
+                    className="w-full border border-slate-600 p-3 rounded-lg bg-slate-800 text-white h-24 resize-none"
                     placeholder="Describe your experience, availability, etc."
                     value={offerMessage}
                     onChange={(e) => setOfferMessage(e.target.value)}

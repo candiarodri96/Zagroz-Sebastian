@@ -189,7 +189,7 @@ export default function NegotiationChat() {
       {/* Contract action bar */}
       <div className="px-6 py-3 border-b border-slate-700 bg-slate-900/50">
         {/* Negotiation phase — no contract yet */}
-        {ad?.status === "negotiation" && !contract && isAdOwner && (
+        {ad?.status === "negotiation" && !contract && !isAdOwner && user?.role === "company" && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-400">
               Ready to proceed? Create a contract to finalize the deal.
@@ -203,9 +203,9 @@ export default function NegotiationChat() {
           </div>
         )}
 
-        {ad?.status === "negotiation" && !contract && !isAdOwner && (
+        {ad?.status === "negotiation" && !contract && isAdOwner && (
           <p className="text-sm text-yellow-400 text-center">
-            ⏳ Waiting for the customer to create a contract...
+            ⏳ Waiting for the company to create a contract...
           </p>
         )}
 

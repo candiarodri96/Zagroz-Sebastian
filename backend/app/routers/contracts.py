@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.models import Ad, Offer, Contract, User
-from app.schemas.contract import ContractCreate, ContractOut
+from app.schemas.contract import ContractCreate, ContractOut, PdfUpload, PdfDownload
 from app.core.auth import get_current_user
 from app.services.status_machine import (
     validate_transition,
@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 # =========================
-# CREATE CONTRACT (Phase 4A — from selected offer)
+# CREATE CONTRACT (Phase 4A — company creates and auto-signs)
 # =========================
 @router.post("/{ad_id}/contract", response_model=ContractOut)
 def create_contract(
@@ -30,9 +30,6 @@ def create_contract(
     ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
     if not ad:
         raise HTTPException(status_code=404, detail="Ad not found")
-
-    if ad.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only the ad owner can create a contract")
 
     if ad.status != "negotiation":
         raise HTTPException(status_code=400, detail=f"Ad must be in 'negotiation'. Current: '{ad.status}'")
@@ -47,6 +44,11 @@ def create_contract(
     if not selected_offer:
         raise HTTPException(status_code=400, detail="No selected offer found")
 
+    # Only the selected company can create the contract
+    if selected_offer.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the selected company can create a contract")
+
+    # Company auto-signs when creating
     contract = Contract(
         ad_id=ad_id,
         offer_id=selected_offer.id,
@@ -54,13 +56,14 @@ def create_contract(
         company_id=selected_offer.user_id,
         agreed_amount=selected_offer.amount,
         details=data.details,
+        status="signed_by_company",
     )
 
     db.add(contract)
 
     create_notification(
         db,
-        user_id=selected_offer.user_id,
+        user_id=ad.user_id,
         ad_id=ad_id,
         type="contract_created",
         title="Contract created!",
@@ -73,7 +76,7 @@ def create_contract(
 
 
 # =========================
-# SIGN CONTRACT (Phase 4A — each party signs)
+# SIGN CONTRACT (Phase 4A — customer signs to finalize)
 # =========================
 @router.patch("/{ad_id}/contract/sign", response_model=ContractOut)
 def sign_contract(
@@ -85,60 +88,40 @@ def sign_contract(
     if not contract:
         raise HTTPException(status_code=404, detail="Contract not found")
 
-    if current_user.id not in (contract.customer_id, contract.company_id):
-        raise HTTPException(status_code=403, detail="You are not a party to this contract")
+    if current_user.id != contract.customer_id:
+        raise HTTPException(status_code=403, detail="Only the customer can sign the contract")
 
-    current_status = contract.status
+    if contract.status != "signed_by_company":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Contract must be 'signed_by_company' for customer to sign. Current: '{contract.status}'",
+        )
 
-    if current_user.id == contract.company_id:
-        if current_status == "draft":
-            new_status = "signed_by_company"
-        elif current_status == "signed_by_customer":
-            new_status = "fully_signed"
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Company cannot sign when contract is '{current_status}'",
-            )
-    else:
-        if current_status == "draft":
-            new_status = "signed_by_customer"
-        elif current_status == "signed_by_company":
-            new_status = "fully_signed"
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Customer cannot sign when contract is '{current_status}'",
-            )
+    validate_transition(contract.status, "fully_signed", CONTRACT_TRANSITIONS, "Contract")
+    contract.status = "fully_signed"
+    contract.signed_at = datetime.now(timezone.utc)
 
-    validate_transition(current_status, new_status, CONTRACT_TRANSITIONS, "Contract")
-    contract.status = new_status
-
-    other_id = contract.company_id if current_user.id == contract.customer_id else contract.customer_id
     ad = db.execute(select(Ad).where(Ad.id == ad_id)).scalars().first()
+    ad.status = "active_contract"
+
+    other_offers = db.execute(
+        select(Offer).where(
+            Offer.ad_id == ad_id,
+            Offer.id != contract.offer_id,
+            Offer.status.in_(["pending", "selected"]),
+        )
+    ).scalars().all()
+    for offer in other_offers:
+        offer.status = "rejected"
 
     create_notification(
         db,
-        user_id=other_id,
+        user_id=contract.company_id,
         ad_id=ad_id,
         type="contract_signed",
-        title="Contract signed!",
-        message=f"{current_user.first_name} signed the contract for \"{ad.title}\".",
+        title="Contract fully signed!",
+        message=f"{current_user.first_name} signed the contract for \"{ad.title}\". Work can begin!",
     )
-
-    if new_status == "fully_signed":
-        contract.signed_at = datetime.now(timezone.utc)
-        ad.status = "active_contract"
-
-        other_offers = db.execute(
-            select(Offer).where(
-                Offer.ad_id == ad_id,
-                Offer.id != contract.offer_id,
-                Offer.status.in_(["pending", "selected"]),
-            )
-        ).scalars().all()
-        for offer in other_offers:
-            offer.status = "rejected"
 
     db.commit()
     db.refresh(contract)
@@ -243,3 +226,49 @@ def get_contract(
         raise HTTPException(status_code=403, detail="You are not a party to this contract")
 
     return contract
+
+
+# =========================
+# UPLOAD PDF
+# =========================
+@router.post("/{ad_id}/contract/pdf", response_model=ContractOut)
+def upload_contract_pdf(
+    ad_id: int,
+    data: PdfUpload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    contract = db.execute(select(Contract).where(Contract.ad_id == ad_id)).scalars().first()
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+
+    if current_user.id not in (contract.customer_id, contract.company_id):
+        raise HTTPException(status_code=403, detail="You are not a party to this contract")
+
+    contract.pdf_data = data.pdf_data
+    contract.pdf_filename = data.pdf_filename
+    db.commit()
+    db.refresh(contract)
+    return contract
+
+
+# =========================
+# DOWNLOAD PDF
+# =========================
+@router.get("/{ad_id}/contract/pdf", response_model=PdfDownload)
+def download_contract_pdf(
+    ad_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    contract = db.execute(select(Contract).where(Contract.ad_id == ad_id)).scalars().first()
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+
+    if current_user.id not in (contract.customer_id, contract.company_id):
+        raise HTTPException(status_code=403, detail="You are not a party to this contract")
+
+    if not contract.pdf_data:
+        raise HTTPException(status_code=404, detail="No PDF uploaded for this contract")
+
+    return {"pdf_data": contract.pdf_data, "pdf_filename": contract.pdf_filename}

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 from typing import Optional
 
@@ -29,7 +29,8 @@ class AdCreate(BaseModel):
     category: CategoryEnum
     city: str = Field(min_length=2, max_length=100)
     address: str = Field(min_length=2, max_length=200)
-    budget: int = Field(gt=0)
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
     description: str = Field(min_length=10)
 
 
@@ -41,7 +42,8 @@ class AdUpdate(BaseModel):
     category: Optional[CategoryEnum] = None
     city: Optional[str] = Field(default=None, min_length=2, max_length=100)
     address: Optional[str] = Field(default=None, min_length=2, max_length=200)
-    budget: Optional[int] = Field(default=None, gt=0)
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
     description: Optional[str] = Field(default=None, min_length=10)
     status: Optional[str] = None
 
@@ -54,7 +56,8 @@ class AdPublicOut(BaseModel):
     title: str
     category: CategoryEnum
     city: str
-    budget: int
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
     description: str
     status: str
     created_at: datetime
