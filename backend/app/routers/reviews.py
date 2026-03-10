@@ -15,7 +15,7 @@ router = APIRouter()
 # =========================
 # CREATE REVIEW (only after contract is completed)
 # =========================
-@router.post("/{ad_id}/review", response_model=ReviewOut)
+@router.post("/ads/{ad_id}/review", response_model=ReviewOut)
 def create_review(
     ad_id: int,
     data: ReviewCreate,
@@ -137,7 +137,7 @@ def get_user_rating(
 # =========================
 # CHECK IF CURRENT USER HAS REVIEWED
 # =========================
-@router.get("/{ad_id}/review/mine")
+@router.get("/ads/{ad_id}/review/mine")
 def get_my_review(
     ad_id: int,
     db: Session = Depends(get_db),
