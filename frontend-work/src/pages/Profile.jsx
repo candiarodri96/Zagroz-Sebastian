@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, MapPin, Users, Mail, Plus, UserRoundCog, Save, X } from 'lucide-react';
 import ProfileReviews from "../components/ProfileReviews";
-import { StarRating } from "../components/ReviewSection";
-import categoryImages from "../utils/categoryImages";
 
 const API = import.meta.env.VITE_API_URL;
 
