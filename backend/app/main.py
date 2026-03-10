@@ -7,7 +7,7 @@ from app.routers.ads import router as ads_router
 from app.core.auth import router as auth_router
 from app.routers.offers import router as offers_router
 from app.routers.contracts import router as contracts_router
-from app.routers.messages import router as messages_router
+from app.routers.messages import router as messages_router, conversations_router
 from app.routers.notifications import router as notifications_router
 from app.routers.reviews import router as reviews_router
 
