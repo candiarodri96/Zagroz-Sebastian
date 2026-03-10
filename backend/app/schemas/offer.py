@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -9,6 +9,7 @@ from typing import Optional
 class OfferCreate(BaseModel):
     amount: int = Field(gt=0)
     estimated_time: Optional[str] = Field(None, max_length=100)
+    available_to_start: Optional[date] = None
     message: Optional[str] = Field(None, max_length=500)
 
 
@@ -18,6 +19,7 @@ class OfferCreate(BaseModel):
 class OfferUpdate(BaseModel):
     amount: Optional[int] = Field(None, gt=0)
     estimated_time: Optional[str] = Field(None, max_length=100)
+    available_to_start: Optional[date] = None
     message: Optional[str] = Field(None, max_length=500)
 
 
@@ -30,6 +32,7 @@ class OfferOut(BaseModel):
     user_id: int
     amount: int
     estimated_time: Optional[str] = None
+    available_to_start: Optional[date] = None
     message: Optional[str] = None
     version: int
     status: str
