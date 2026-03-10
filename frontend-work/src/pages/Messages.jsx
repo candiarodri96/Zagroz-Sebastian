@@ -66,7 +66,7 @@ export default function Messages() {
           {conversations.map((conv) => (
             <button
               key={conv.ad_id}
-              onClick={() => navigate(`/messages/${conv.ad_id}`)}
+              onClick={() => navigate(`/chat/${conv.ad_id}`)}
               className="w-full flex items-center gap-4 p-4 bg-gray-900 border border-slate-700 rounded-xl hover:border-slate-500 transition-colors text-left"
             >
               {/* Avatar placeholder */}
