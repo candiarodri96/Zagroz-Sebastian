@@ -123,7 +123,7 @@ export default function Profile() {
       .finally(() => setLoading(false));
 
     if (!isCompany) {
-      fetch(`${API}/ads/`, { headers: { Authorization: `Bearer ${user.access_token}` } })
+      fetch(`${API}/ads/mine`, { headers: { Authorization: `Bearer ${user.access_token}` } })
         .then(r => r.ok ? r.json() : [])
         .then(setMyAds)
         .catch(err => console.error("Failed to fetch ads:", err))
