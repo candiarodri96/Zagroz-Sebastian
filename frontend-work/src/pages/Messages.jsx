@@ -1,12 +1,24 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, ArrowRight } from "lucide-react";
+import { MessageSquare, ChevronRight } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL;
 
+function timeAgo(dateStr) {
+  if (!dateStr) return "";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
 export default function Messages() {
   const navigate = useNavigate();
-  const [chats, setChats] = useState([]);
+  const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -16,55 +28,15 @@ export default function Messages() {
       navigate("/login");
       return;
     }
-    fetchChats();
+    fetchConversations();
   }, []);
 
-  const fetchChats = async () => {
+  const fetchConversations = async () => {
     try {
-      // Get all ads, then filter to ones with active negotiations/contracts
-      const res = await fetch(`${API}/ads/`, {
+      const res = await fetch(`${API}/conversations`, {
         headers: { Authorization: `Bearer ${user.access_token}` },
       });
-
-      if (!res.ok) {
-        setLoading(false);
-        return;
-      }
-
-      const allAds = await res.json();
-
-      // For each ad in negotiation/active_contract, check if user is involved
-      const activeChats = [];
-
-      for (const ad of allAds.filter((a) =>
-        ["negotiation", "active_contract"].includes(a.status)
-      )) {
-        // Check if this user owns the ad
-        if (ad.user_id === user.id) {
-          activeChats.push(ad);
-          continue;
-        }
-
-        // Check if this user has a selected offer
-        try {
-          const offersRes = await fetch(`${API}/ads/${ad.id}/offers`, {
-            headers: { Authorization: `Bearer ${user.access_token}` },
-          });
-          if (offersRes.ok) {
-            const offers = await offersRes.json();
-            const hasSelected = offers.some(
-              (o) => o.user_id === user.id && o.status === "selected"
-            );
-            if (hasSelected) {
-              activeChats.push(ad);
-            }
-          }
-        } catch {
-          // ignore
-        }
-      }
-
-      setChats(activeChats);
+      if (res.ok) setConversations(await res.json());
     } catch {
       // ignore
     } finally {
@@ -72,24 +44,16 @@ export default function Messages() {
     }
   };
 
-  const statusLabel = (status) => {
-    switch (status) {
-      case "negotiation":
-        return { text: "Negotiating", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" };
-      case "active_contract":
-        return { text: "Active Contract", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" };
-      default:
-        return { text: status, color: "bg-slate-500/20 text-slate-400 border-slate-500/30" };
-    }
-  };
-
-  if (loading) return <p className="text-center mt-24">Loading messages...</p>;
+  if (loading) {
+    return <p className="text-center mt-24 text-slate-400">Loading messages...</p>;
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-6 mt-24 pb-16">
-      <h1 className="text-3xl font-bold mb-8">Messages</h1>
+      <h1 className="text-3xl font-bold mb-2">Messages</h1>
+      <p className="text-sm text-slate-400 mb-8">Your active conversations</p>
 
-      {chats.length === 0 ? (
+      {conversations.length === 0 ? (
         <div className="text-center py-16">
           <MessageSquare size={48} className="mx-auto text-slate-600 mb-4" />
           <p className="text-slate-400 text-lg">No active conversations</p>
@@ -98,31 +62,43 @@ export default function Messages() {
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {chats.map((ad) => {
-            const label = statusLabel(ad.status);
-            return (
-              <button
-                key={ad.id}
-                onClick={() => navigate(`/chat/${ad.id}`)}
-                className="w-full flex items-center justify-between p-4 bg-gray-900 border border-slate-700 rounded-xl hover:border-slate-500 transition-colors text-left"
-              >
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-semibold truncate">{ad.title}</h3>
-                  <p className="text-sm text-slate-400 mt-1">{ad.city} · {ad.budget} kr</p>
-                </div>
+        <div className="space-y-2">
+          {conversations.map((conv) => (
+            <button
+              key={conv.ad_id}
+              onClick={() => navigate(`/chat/${conv.ad_id}`)}
+              className="w-full flex items-center gap-4 p-4 bg-gray-900 border border-slate-700 rounded-xl hover:border-slate-500 transition-colors text-left"
+            >
+              {/* Avatar placeholder */}
+              <div className="w-11 h-11 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0 text-blue-400 font-semibold text-sm">
+                {conv.other_user_name.charAt(0).toUpperCase()}
+              </div>
 
-                <div className="flex items-center gap-3 ml-4">
-                  <span
-                    className={`text-xs px-3 py-1 rounded-full border ${label.color}`}
-                  >
-                    {label.text}
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-white font-semibold text-sm truncate">
+                    {conv.other_user_name}
                   </span>
-                  <ArrowRight size={18} className="text-slate-500" />
+                  <span className="text-[11px] text-slate-500 shrink-0 ml-2">
+                    {timeAgo(conv.last_message_at)}
+                  </span>
                 </div>
-              </button>
-            );
-          })}
+                <p className="text-xs text-slate-500 truncate mb-1">{conv.ad_title}</p>
+                <p className={`text-xs truncate ${conv.has_unread ? "text-white font-medium" : "text-slate-500"}`}>
+                  {conv.last_message ?? "No messages yet — start the conversation"}
+                </p>
+              </div>
+
+              {/* Unread dot + chevron */}
+              <div className="flex items-center gap-2 shrink-0">
+                {conv.has_unread && (
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                )}
+                <ChevronRight size={16} className="text-slate-600" />
+              </div>
+            </button>
+          ))}
         </div>
       )}
     </div>

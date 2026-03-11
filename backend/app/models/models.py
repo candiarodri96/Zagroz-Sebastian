@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from sqlalchemy import Integer, Text, String, ForeignKey, DateTime, CheckConstraint, func
+from datetime import datetime, timezone, date
+from sqlalchemy import Integer, Text, String, ForeignKey, DateTime, Date, CheckConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
@@ -43,7 +43,8 @@ class Ad(Base):
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     city: Mapped[str] = mapped_column(String(100), nullable=False)
     address: Mapped[str] = mapped_column(String(200), nullable=True)
-    budget: Mapped[int] = mapped_column(Integer, nullable=False)
+    start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)
 
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="open")
@@ -58,7 +59,7 @@ class Ad(Base):
     user = relationship("User", back_populates="ads")
     offers = relationship("Offer", back_populates="ad", cascade="all, delete")
     contract = relationship("Contract", back_populates="ad", uselist=False, cascade="all, delete")
-    messages = relationship("Message", back_populates="ad", cascade="all, delete")
+    conversation = relationship("Conversation", back_populates="ad", uselist=False, cascade="all, delete")
 
 
 # =========================
@@ -80,6 +81,7 @@ class Offer(Base):
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     estimated_time: Mapped[str | None] = mapped_column(String(100), nullable=True)
     message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    available_to_start: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
@@ -127,6 +129,8 @@ class Contract(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
     signed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    pdf_data: Mapped[str | None] = mapped_column(Text, nullable=True)
+    pdf_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Relationships
     ad = relationship("Ad", back_populates="contract")
@@ -136,15 +140,39 @@ class Contract(Base):
 
 
 # =========================
+# CONVERSATION
+# =========================
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    ad_id: Mapped[int] = mapped_column(
+        ForeignKey("ads.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+    )
+    customer_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    company_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, nullable=False
+    )
+
+    # Relationships
+    ad = relationship("Ad", back_populates="conversation")
+    messages = relationship("Message", back_populates="conversation", cascade="all, delete")
+
+
+# =========================
 # MESSAGE (Negotiation Chat)
 # =========================
 class Message(Base):
     __tablename__ = "messages"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-
-    ad_id: Mapped[int] = mapped_column(
-        ForeignKey("ads.id", ondelete="CASCADE"), nullable=False, index=True
+    conversation_id: Mapped[int] = mapped_column(
+        ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False, index=True
     )
     sender_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
@@ -156,7 +184,7 @@ class Message(Base):
     )
 
     # Relationships
-    ad = relationship("Ad", back_populates="messages")
+    conversation = relationship("Conversation", back_populates="messages")
     sender = relationship("User")
 
 

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -14,11 +15,25 @@ class MessageCreate(BaseModel):
 # =========================
 class MessageOut(BaseModel):
     id: int
-    ad_id: int
+    conversation_id: int
     sender_id: int
     sender_name: str
     content: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+
+
+# =========================
+# CONVERSATION (for /conversations list)
+# =========================
+class ConversationOut(BaseModel):
+    ad_id: int
+    ad_title: str
+    other_user_id: Optional[int]
+    other_user_name: str
+    last_message: Optional[str]
+    last_message_at: Optional[datetime]
+    has_unread: bool
+
+    model_config = {"from_attributes": True}

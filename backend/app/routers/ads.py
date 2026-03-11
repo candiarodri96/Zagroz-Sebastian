@@ -82,6 +82,20 @@ def delete_ad(
     return {"message": "Ad deleted successfully"}
 
 # =========================
+# GET MY ADS (all statuses, authenticated)
+# =========================
+@router.get("/mine", response_model=list[AdPublicOut])
+def get_my_ads(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ads = db.query(Ad).filter(Ad.user_id == current_user.id).order_by(Ad.created_at.desc()).all()
+    for ad in ads:
+        ad.owner_name = f"{current_user.first_name} {current_user.last_name}"
+    return ads
+
+
+# =========================
 # GET AD (public — but address only shown to authorized users)
 # =========================
 @router.get("/{ad_id}", response_model=AdPublicOut)

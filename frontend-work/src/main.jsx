@@ -56,8 +56,16 @@ const router = createBrowserRouter([
       },
       {
         path: "messages",
-        element: <Messages></Messages>
-      }
+        element: <Messages />,
+      },
+      {
+        path: "messages/:adId",
+        element: <NegotiationChat />,
+      },
+      {
+        path: "create",
+        element: <CreatePost />,
+      },
     ],
   },
   {
@@ -67,10 +75,6 @@ const router = createBrowserRouter([
   {
     path: "register",
     element: <Register />,
-  },
-  {
-    path: "create",
-    element: <CreatePost />,
   },
 ]);
 
