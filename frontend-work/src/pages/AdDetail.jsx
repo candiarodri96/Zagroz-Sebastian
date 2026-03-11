@@ -140,30 +140,6 @@ export default function AdDetail() {
           <Calendar size={18} />
           <span>Posted {new Date(ad.created_at).toLocaleDateString()}</span>
         </div>
-
-        {/* Address + Google Maps — only visible after contract is fully signed */}
-        {ad.address && (
-          <div className="mt-4 p-4 bg-slate-900 border border-slate-700 rounded-xl">
-            <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">
-              📍 Full Address
-            </p>
-            <p className="text-white font-medium mb-3">
-              {ad.address}, {ad.city}
-            </p>
-            {import.meta.env.VITE_GOOGLE_MAPS_KEY && (
-              <div className="w-full h-48 rounded-lg overflow-hidden">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=${encodeURIComponent(ad.address + ", " + ad.city)}`}
-                />
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Description */}
