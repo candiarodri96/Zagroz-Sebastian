@@ -98,7 +98,7 @@ def get_my_ads(
 # =========================
 # GET AD (public — but address only shown to authorized users)
 # =========================
-@router.get("/{ad_id}", response_model=AdPublicOut)
+@router.get("/{ad_id}", response_model=AdMatchedOut)
 def get_ad(
     ad_id: int,
     db: Session = Depends(get_db),

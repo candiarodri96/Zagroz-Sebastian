@@ -72,4 +72,4 @@ class AdPublicOut(BaseModel):
 # MATCHED OUTPUT (WITH ADDRESS)
 # =========================
 class AdMatchedOut(AdPublicOut):
-    address: str
+    address: Optional[str] = None
