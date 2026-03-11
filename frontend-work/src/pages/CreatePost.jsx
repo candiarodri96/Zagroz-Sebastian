@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoadScript } from "@react-google-maps/api";
+import usePlacesAutocomplete from "use-places-autocomplete";
 import categoryImages from "../utils/categoryImages";
 
 const categories = [
