@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Send, FileText, Plus } from "lucide-react";
+import { ArrowLeft, Send, FileText, Plus, MapPin } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -242,6 +242,33 @@ export default function NegotiationChat() {
           <p className="text-sm text-emerald-400 text-center">🎉 Job completed!</p>
         )}
       </div>
+
+      {/* Address + Map — only visible after contract is signed */}
+      {ad?.address && contract && ["fully_signed", "completed"].includes(contract.status) && (
+        <div className="mx-6 mt-3 p-4 bg-slate-900 border border-slate-700 rounded-xl">
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin size={16} className="text-blue-400" />
+            <p className="text-xs text-slate-500 uppercase tracking-wider">
+              Job Location
+            </p>
+          </div>
+          <p className="text-white font-medium mb-3">
+            {ad.address}, {ad.city}
+          </p>
+          {import.meta.env.VITE_GOOGLE_MAPS_KEY && (
+            <div className="w-full h-48 rounded-lg overflow-hidden">
+              <iframe
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=${encodeURIComponent(ad.address + ", " + ad.city)}`}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Contract creation form modal */}
       {showContractForm && (
