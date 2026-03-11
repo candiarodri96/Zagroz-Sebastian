@@ -14,7 +14,7 @@ const STATUS_STYLES = {
 };
 
 // Safe wrapper around JSON.parse — returns fallback if the key is missing or
-// the stored value is corrupted (e.g. truncated by a storage quota error).
+// the stored value is corrupted (e.g. truncated by a storage quota error)
 function readLocalStorage(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
