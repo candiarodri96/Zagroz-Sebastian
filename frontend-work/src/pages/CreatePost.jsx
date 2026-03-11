@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoadScript } from "@react-google-maps/api";
-import usePlacesAutocomplete from "use-places-autocomplete";
 import categoryImages from "../utils/categoryImages";
 
 const categories = [
@@ -22,23 +21,43 @@ const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 const MAPS_LIBRARIES = ["places"];
 
 function AddressInput({ onChange }) {
-  const {
-    ready,
-    value,
-    suggestions: { status, data },
-    setValue,
-    clearSuggestions,
-  } = usePlacesAutocomplete({ debounce: 300 });
+  const [value, setValue] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const debounceRef = useRef(null);
 
-  const handleInput = (e) => {
-    setValue(e.target.value);
-    onChange(e.target.value);
+  const fetchSuggestions = async (input) => {
+    if (!input || input.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      const { suggestions } =
+        await window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(
+          { input }
+        );
+      setSuggestions(
+        suggestions.map((s) => ({
+          placeId: s.placePrediction.placeId,
+          text: s.placePrediction.text.text,
+        }))
+      );
+    } catch {
+      setSuggestions([]);
+    }
   };
 
-  const handleSelect = (description) => {
-    setValue(description, false);
-    onChange(description);
-    clearSuggestions();
+  const handleInput = (e) => {
+    const val = e.target.value;
+    setValue(val);
+    onChange(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchSuggestions(val), 300);
+  };
+
+  const handleSelect = (text) => {
+    setValue(text);
+    onChange(text);
+    setSuggestions([]);
   };
 
   return (
@@ -49,17 +68,16 @@ function AddressInput({ onChange }) {
         placeholder="e.g. Sveavägen 12, 111 57"
         value={value}
         onChange={handleInput}
-        disabled={!ready}
       />
-      {status === "OK" && (
+      {suggestions.length > 0 && (
         <ul className="absolute z-10 w-full bg-slate-700 border border-slate-600 rounded-lg mt-1 shadow-lg overflow-hidden">
-          {data.map(({ place_id, description }) => (
+          {suggestions.map(({ placeId, text }) => (
             <li
-              key={place_id}
+              key={placeId}
               className="p-3 hover:bg-slate-600 cursor-pointer text-white text-sm border-b border-slate-600 last:border-0"
-              onClick={() => handleSelect(description)}
+              onClick={() => handleSelect(text)}
             >
-              {description}
+              {text}
             </li>
           ))}
         </ul>
@@ -250,7 +268,7 @@ export default function CreatePost() {
   if (!MAPS_KEY) return formContent;
 
   return (
-    <LoadScript googleMapsApiKey={MAPS_KEY} libraries={MAPS_LIBRARIES}>
+    <LoadScript googleMapsApiKey={MAPS_KEY} libraries={MAPS_LIBRARIES} version="beta">
       {formContent}
     </LoadScript>
   );
