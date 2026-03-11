@@ -13,6 +13,8 @@ export default function ContractView() {
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [ad, setAd] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -26,6 +28,10 @@ export default function ContractView() {
     fetchMe();
   }, [adId]);
 
+  useEffect(() => {
+    if (contract) fetchAd();
+  }, [contract]);
+
   const fetchMe = async () => {
     try {
       const res = await fetch(`${API}/users/me`, {
@@ -34,6 +40,21 @@ export default function ContractView() {
       if (res.ok) {
         const data = await res.json();
         setCurrentUserId(data.id);
+        setCurrentUser(data);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const fetchAd = async () => {
+    try {
+      const res = await fetch(`${API}/ads/${adId}`, {
+        headers: { Authorization: `Bearer ${user.access_token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAd(data);
       }
     } catch {
       // ignore
@@ -150,30 +171,123 @@ export default function ContractView() {
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF();
+      const pageW = 210;
+      const margin = 14;
 
-      doc.setFontSize(18);
-      doc.text("Contract", 20, 20);
+      const companyName = currentUser
+        ? `${currentUser.first_name} ${currentUser.last_name}`
+        : `Company #${contract.company_id}`;
+      const signedDate = contract.signed_at
+        ? new Date(contract.signed_at).toLocaleDateString("sv-SE")
+        : new Date(contract.created_at).toLocaleDateString("sv-SE");
+      const amount = contract.agreed_amount;
+      const moms = Math.round(amount * 0.25);
+      const total = amount + moms;
 
-      doc.setFontSize(11);
-      doc.text(`Ad #${contract.ad_id}`, 20, 35);
-      doc.text(`Status: ${contract.status.replace(/_/g, " ")}`, 20, 45);
-      doc.text(`Agreed Amount: ${contract.agreed_amount} kr`, 20, 55);
-      doc.text(`Customer ID: ${contract.customer_id}`, 20, 65);
-      doc.text(`Company ID: ${contract.company_id}`, 20, 75);
-      doc.text(`Created: ${new Date(contract.created_at).toLocaleDateString()}`, 20, 85);
-      if (contract.signed_at) {
-        doc.text(`Signed: ${new Date(contract.signed_at).toLocaleString()}`, 20, 95);
+      // ── Header ──────────────────────────────────────────────
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.text(companyName, margin, 20);
+
+      doc.setFontSize(16);
+      doc.text("Kontrakt", 130, 14);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text("Datum", 130, 22);
+      doc.text(signedDate, 155, 22);
+      doc.text("Kundnr:", 130, 28);
+      doc.text(`#${contract.customer_id}`, 155, 28);
+      doc.text("Kontraktnr:", 130, 34);
+      doc.text(`#${contract.ad_id}`, 155, 34);
+
+      // ── Divider ─────────────────────────────────────────────
+      doc.setDrawColor(180);
+      doc.line(margin, 40, pageW - margin, 40);
+
+      // ── Billing address ─────────────────────────────────────
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Fakturaadress", margin, 48);
+      doc.setFont("helvetica", "normal");
+      if (ad?.address) {
+        doc.text(ad.address, margin, 55);
+        if (ad.city) doc.text(ad.city, margin, 61);
+      } else {
+        doc.text("-", margin, 55);
       }
+
+      // ── References ──────────────────────────────────────────
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Er referens", margin, 74);
+      doc.text("Vår referens", 70, 74);
+      doc.text("Startdatum", 120, 74);
+      doc.text("Betalningsvillkor", 160, 74);
+
+      doc.setFont("helvetica", "normal");
+      doc.text(`Kund #${contract.customer_id}`, margin, 80);
+      doc.text(companyName, 70, 80);
+      doc.text(ad?.start_date ? new Date(ad.start_date).toLocaleDateString("sv-SE") : "-", 120, 80);
+      doc.text("30 dagar", 160, 80);
+
+      // ── Table header ─────────────────────────────────────────
+      doc.setFillColor(230, 230, 230);
+      doc.rect(margin, 88, pageW - margin * 2, 8, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Beskrivning", margin + 2, 94);
+      doc.text("Antal", 140, 94);
+      doc.text("Pris", 158, 94);
+      doc.text("Belopp", 178, 94);
+
+      // ── Table row ────────────────────────────────────────────
+      doc.setFont("helvetica", "normal");
+      const jobTitle = ad?.title || `Uppdrag #${contract.ad_id}`;
+      const titleLines = doc.splitTextToSize(jobTitle, 120);
+      doc.text(titleLines, margin + 2, 102);
+      doc.text("1", 140, 102);
+      doc.text(`${amount} kr`, 152, 102);
+      doc.text(`${amount} kr`, 172, 102);
+
+      // details as small subtext
       if (contract.details) {
-        doc.text("Details:", 20, 110);
-        const lines = doc.splitTextToSize(contract.details, 170);
-        doc.text(lines, 20, 120);
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        const detailLines = doc.splitTextToSize(contract.details, 120);
+        doc.text(detailLines, margin + 2, 108 + (titleLines.length - 1) * 5);
+        doc.setTextColor(0);
+        doc.setFontSize(9);
       }
 
-      const filename = `contract-${contract.ad_id}-${Date.now()}.pdf`;
+      // ── Table bottom border ──────────────────────────────────
+      doc.setDrawColor(180);
+      doc.line(margin, 190, pageW - margin, 190);
+
+      // ── Summary ──────────────────────────────────────────────
+      doc.setFont("helvetica", "normal");
+      doc.text("Summa:", 150, 200);
+      doc.text(`${amount} kr`, 183, 200);
+      doc.text("Moms 25%:", 150, 208);
+      doc.text(`${moms} kr`, 183, 208);
+      doc.line(150, 212, pageW - margin, 212);
+      doc.setFont("helvetica", "bold");
+      doc.text("Att betala:", 150, 219);
+      doc.text(`${total} kr`, 183, 219);
+
+      // ── Footer ───────────────────────────────────────────────
+      doc.setDrawColor(180);
+      doc.line(margin, 275, pageW - margin, 275);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text("WorkFlow", margin, 281);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Kontrakt #${contract.ad_id}  |  ${signedDate}  |  Status: ${contract.status.replace(/_/g, " ")}`, margin, 286);
+
+      // ── Save & upload ────────────────────────────────────────
+      const filename = `kontrakt-${contract.ad_id}-${Date.now()}.pdf`;
       const base64 = doc.output("datauristring").split(",")[1];
 
-      // Upload to server
       await fetch(`${API}/ads/${adId}/contract/pdf`, {
         method: "POST",
         headers: {
@@ -183,7 +297,6 @@ export default function ContractView() {
         body: JSON.stringify({ pdf_data: base64, pdf_filename: filename }),
       });
 
-      // Trigger download
       doc.save(filename);
       fetchContract();
     } catch (err) {
@@ -311,6 +424,13 @@ export default function ContractView() {
           <div>
             <p className="text-slate-500 text-sm mb-1">Details</p>
             <p className="text-slate-300 text-sm">{contract.details}</p>
+          </div>
+        )}
+
+        {ad?.address && ["fully_signed", "completed"].includes(contract.status) && (
+          <div>
+            <p className="text-slate-500 text-sm mb-1">Job Address</p>
+            <p className="text-slate-300 text-sm">{ad.address}{ad.city ? `, ${ad.city}` : ""}</p>
           </div>
         )}
 
