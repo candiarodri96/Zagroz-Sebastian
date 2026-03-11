@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { LoadScript } from "@react-google-maps/api";
+import usePlacesAutocomplete from "use-places-autocomplete";
 import categoryImages from "../utils/categoryImages";
 
 const categories = [
@@ -16,6 +18,55 @@ const categories = [
 ];
 
 const API = import.meta.env.VITE_API_URL;
+const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY;
+const MAPS_LIBRARIES = ["places"];
+
+function AddressInput({ onChange }) {
+  const {
+    ready,
+    value,
+    suggestions: { status, data },
+    setValue,
+    clearSuggestions,
+  } = usePlacesAutocomplete({ debounce: 300 });
+
+  const handleInput = (e) => {
+    setValue(e.target.value);
+    onChange(e.target.value);
+  };
+
+  const handleSelect = (description) => {
+    setValue(description, false);
+    onChange(description);
+    clearSuggestions();
+  };
+
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        className="w-full border border-slate-300 p-3 rounded-lg bg-slate-800 text-white"
+        placeholder="e.g. Sveavägen 12, 111 57"
+        value={value}
+        onChange={handleInput}
+        disabled={!ready}
+      />
+      {status === "OK" && (
+        <ul className="absolute z-10 w-full bg-slate-700 border border-slate-600 rounded-lg mt-1 shadow-lg overflow-hidden">
+          {data.map(({ place_id, description }) => (
+            <li
+              key={place_id}
+              className="p-3 hover:bg-slate-600 cursor-pointer text-white text-sm border-b border-slate-600 last:border-0"
+              onClick={() => handleSelect(description)}
+            >
+              {description}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export default function CreatePost() {
   const [title, setTitle] = useState("");
@@ -73,7 +124,7 @@ export default function CreatePost() {
     }
   };
 
-  return (
+  const formContent = (
     <div className="max-w-2xl mx-auto px-6 mt-24">
       <h1 className="text-3xl font-bold mb-8">Create a New Ad</h1>
 
@@ -112,7 +163,6 @@ export default function CreatePost() {
             ))}
           </select>
 
-          {/* Category image preview */}
           {category && (
             <div className="mt-3">
               <p className="text-sm text-gray-400 mb-2">This image will be shown on your ad:</p>
@@ -152,13 +202,17 @@ export default function CreatePost() {
           <label className="block mb-2 text-sm font-medium">
             Address <span className="text-gray-400 text-xs">(hidden until job is accepted)</span>
           </label>
-          <input
-            type="text"
-            className="w-full border border-slate-300 p-3 rounded-lg bg-slate-800 text-white"
-            placeholder="e.g. Sveavägen 12, 111 57"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
+          {MAPS_KEY ? (
+            <AddressInput onChange={setAddress} />
+          ) : (
+            <input
+              type="text"
+              className="w-full border border-slate-300 p-3 rounded-lg bg-slate-800 text-white"
+              placeholder="e.g. Sveavägen 12, 111 57"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -191,5 +245,13 @@ export default function CreatePost() {
         </button>
       </form>
     </div>
+  );
+
+  if (!MAPS_KEY) return formContent;
+
+  return (
+    <LoadScript googleMapsApiKey={MAPS_KEY} libraries={MAPS_LIBRARIES}>
+      {formContent}
+    </LoadScript>
   );
 }

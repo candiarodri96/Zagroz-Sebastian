@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -12,6 +12,7 @@ from app.core.security import (
     create_access_token,
     decode_access_token,
 )
+from app.core.limiter import limiter
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -24,7 +25,8 @@ oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=
 # REGISTER (updated — now stores role)
 # =========================
 @router.post("/register", response_model=UserOut)
-def register(user_data: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("60/15minutes")
+def register(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
     existing = db.execute(
         select(User).where(User.email == user_data.email)
     ).scalars().first()
@@ -54,7 +56,8 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 # LOGIN (updated — now returns role)
 # =========================
 @router.post("/login")
-def login(user_data: UserLogin, db: Session = Depends(get_db)):
+@limiter.limit("60/15minutes")
+def login(request: Request, user_data: UserLogin, db: Session = Depends(get_db)):
     user = db.execute(
         select(User).where(User.email == user_data.email)
     ).scalars().first()

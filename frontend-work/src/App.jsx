@@ -20,23 +20,27 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Navbar openChat={() => setIsChatOpen(true)} />
+      <div className="min-h-screen flex flex-col">
+        <Navbar openChat={() => setIsChatOpen(true)} />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/results" element={<Results />} />
-        <Route path="/ads/:id" element={<AdDetail />} />
-        <Route path="/create" element={<CreatePost />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/my-ads" element={<MyAds />} />
-        <Route path="/my-offers" element={<MyOffers />} />
-        <Route path="/chat/:adId" element={<NegotiationChat />} />
-        <Route path="/contract/:adId" element={<ContractView />} />
-        <Route path="/messages" element={<Messages />} />
-        <Route path="/messages/:adId" element={<NegotiationChat />} />
-      </Routes>
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/results" element={<Results />} />
+            <Route path="/ads/:id" element={<AdDetail />} />
+            <Route path="/create" element={<CreatePost />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/my-ads" element={<MyAds />} />
+            <Route path="/my-offers" element={<MyOffers />} />
+            <Route path="/chat/:adId" element={<NegotiationChat />} />
+            <Route path="/contract/:adId" element={<ContractView />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/messages/:adId" element={<NegotiationChat />} />
+          </Routes>
+        </main>
+      </div>
 
       {isChatOpen && <Chatbot closeChat={() => setIsChatOpen(false)} />}
     </BrowserRouter>
